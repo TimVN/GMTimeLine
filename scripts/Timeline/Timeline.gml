@@ -130,7 +130,11 @@ function Limit(seconds) constructor {
 		finish(index);
 		
 		setTimeout(function() {
-			_item._runningEvents = max(0, _item._runningEvents - _runningEvents);
+			for (var i = 0; i < array_length(_batch); i++) {
+				// We loop through the batch passed to this event and finish them
+				// If they're already finished, they will be ignored
+				finish(_batch[i]);
+			}
 		}, _delay);
 	}
 }
