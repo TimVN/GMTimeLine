@@ -1,1 +1,1 @@
-speed = 4 * !global.paused;
+speed = 4 * global.timeScale;

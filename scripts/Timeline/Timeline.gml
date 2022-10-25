@@ -1,4 +1,4 @@
-global.paused = false;
+global.timeScale = 1;
 
 function Base() constructor {
 	// This function is attached later by the parent wave class
@@ -88,18 +88,19 @@ function Await() constructor {
 	}
 }
 
-function Delay(seconds) : Base() constructor {
+function Delay(seconds, callback) : Base() constructor {
 	name = "Delay";
 	type = "delay";
 	
 	_delay = seconds * room_speed;
+	_callback = callback;
 	
 	function start() {
 		show_debug_message("Delaying timeline for " + string(_delay / room_speed) + " seconds");
 		
 		setTimeout(function() {
 			finish(index);
-		}, _delay);
+		}, _delay, _callback);
 	}
 }
 
@@ -184,6 +185,12 @@ function Timeline() constructor {
 		}
 	}
 	
+	function reset() {
+		_position = 0;
+		_batch = [];
+		_runningEvents = 0;
+	}
+	
 	function start() {
 		if (_startedAt == undefined) {
 			_startedAt = current_time;
@@ -238,8 +245,8 @@ function Timeline() constructor {
 	}
 	
 	// Allows for a delay between events
-	delay = function(seconds) {
-		array_push(_timeline, new Delay(seconds));
+	delay = function(seconds, onProgress) {
+		array_push(_timeline, new Delay(seconds, onProgress));
 		
 		return self;
 	}
