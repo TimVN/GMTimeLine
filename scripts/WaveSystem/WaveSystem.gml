@@ -9,10 +9,6 @@ enum SpawnMode {
 	Destroy,
 }
 
-function spawn(x, y, amount, interval, obj, mode = SpawnMode.Default, properties = {}) {
-	return new Spawn(x, y, amount, interval, obj, mode, properties);
-}
-
 function Spawn(x, y, amount, interval, obj, mode, properties) constructor {
 	name = "Spawn";
 	type = "spawn";
@@ -37,7 +33,9 @@ function Spawn(x, y, amount, interval, obj, mode, properties) constructor {
 		}
 	}
 	
-	function start() {		
+	function start() {
+		show_debug_message("START");
+		
 		_position++;
 		
 		var instance = instance_create_layer(_x, _y, "Instances", _obj);
@@ -70,10 +68,6 @@ function Spawn(x, y, amount, interval, obj, mode, properties) constructor {
 	}
 }
 
-function await() {
-	return new Await();
-}
-
 function Await() constructor {
 	name = "Await";
 	type = "await";
@@ -81,10 +75,6 @@ function Await() constructor {
 	function start() {
 		show_debug_message("Awaiting...");
 	}
-}
-
-function delay(seconds) {
-	return new Delay(seconds);
 }
 
 function Delay(seconds) : Base() constructor {
@@ -101,6 +91,7 @@ function Delay(seconds) : Base() constructor {
 }
 
 function Custom(callback) constructor {
+	name = "Custom function";
 	type = "custom";
 	_callback = callback;
 	
@@ -109,16 +100,12 @@ function Custom(callback) constructor {
 	}
 }
 
-function custom(callback) {
-	return new Custom(callback);
-}
-
 /** Wave 
   * 
   *
 **/
-function Wave(timeline) constructor {
-	_timeline = timeline;
+function Wave() constructor {
+	_timeline = [];
 	_position = 0;
 	_runningTasks = 0;
 	
@@ -141,14 +128,8 @@ function Wave(timeline) constructor {
 		}
 	}
 	
-	for (var i = 0; i < array_length(timeline); i++) {
-		_timeline[i].finish = function() {
-			onTaskFinish();
-		};
-	}
-	
 	function start() {
-		// show_debug_message("Starting from position " + string(_position));
+		show_debug_message("Starting from position " + string(_position));
 		if (_startedAt == undefined) {
 			_startedAt = date_current_datetime();
 		}
@@ -160,7 +141,12 @@ function Wave(timeline) constructor {
 			_position = i;
 			_runningTasks++;
 			
-			// show_debug_message("Starting " + _timeline[i].name + " task. There are now " + string(_runningTasks) + " tasks running");
+			_timeline[i].finish = function() {
+				onTaskFinish();
+			};
+			
+			show_debug_message("Position is now at " + string(_position));
+			show_debug_message("Starting " + _timeline[i].name + " task. There are now " + string(_runningTasks) + " tasks running");
 			
 			if (_timeline[i].type == "await" || _timeline[i].type == "delay") {
 				show_debug_message("Next item is delayed");
@@ -181,6 +167,30 @@ function Wave(timeline) constructor {
 			// show_debug_message("Starting timeline item " + string(batch[i])  + " (" + string(_timeline[batch[i]].name) + ")");
 			_timeline[batch[i]].start();
 		}
+	}
+	
+	spawn = function(x, y, amount, interval, obj, mode = SpawnMode.Default, properties = {}) {
+		array_push(_timeline, new Spawn(x, y, amount, interval, obj, mode, properties));
+		
+		return self;
+	}
+	
+	await = function() {
+		array_push(_timeline, new Await());
+		
+		return self;
+	}
+	
+	delay = function(seconds) {
+		array_push(_timeline, new Delay(seconds));
+		
+		return self;
+	}
+	
+	custom = function(callback) {
+		array_push(_timeline, new Custom(callback));
+		
+		return self;
 	}
 	
 	function onFinish(callback) {
