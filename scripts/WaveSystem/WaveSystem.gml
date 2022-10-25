@@ -109,23 +109,37 @@ function Wave(timeline) constructor {
 	_position = 0;
 	_runningTasks = 0;
 	
-	function onFinish() {
+	_startedAt = undefined;
+	_onFinishCallback = undefined;
+	
+	function onTaskFinish() {
 		_runningTasks = max(0, _runningTasks - 1);
 		// show_debug_message("Finished position " + string(_position) + " with " + string(_runningTasks) + " running tasks left - "  + string(_position) + ":" + string(array_length(_timeline)));
 		
-		if (_runningTasks == 0 && _position < array_length(_timeline) - 1) {
-			start();
+		if (_runningTasks == 0) {
+			if (_position < array_length(_timeline) - 1) {
+				start();
+			} else if (_onFinishCallback != undefined) {
+				_onFinishCallback({
+					startedAt: _startedAt,
+					endedAt: date_current_datetime(),
+				});
+			}
 		}
 	}
 	
 	for (var i = 0; i < array_length(timeline); i++) {
 		_timeline[i].finish = function() {
-			onFinish();
+			onTaskFinish();
 		};
 	}
 	
 	function start() {
 		// show_debug_message("Starting from position " + string(_position));
+		if (_startedAt == undefined) {
+			_startedAt = date_current_datetime();
+		}
+		
 		var batch = [];
 		
 		for (var i = _position; i < array_length(_timeline); i++) {
@@ -154,5 +168,9 @@ function Wave(timeline) constructor {
 			// show_debug_message("Starting timeline item " + string(batch[i])  + " (" + string(_timeline[batch[i]].name) + ")");
 			_timeline[batch[i]].start();
 		}
+	}
+	
+	function onFinish(callback) {
+		_onFinishCallback = callback;
 	}
 }
