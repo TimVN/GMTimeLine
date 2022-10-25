@@ -100,6 +100,19 @@ function Delay(seconds) : Base() constructor {
 	}
 }
 
+function Custom(callback) constructor {
+	type = "custom";
+	_callback = callback;
+	
+	function start() {
+		_callback(self);
+	}
+}
+
+function custom(callback) {
+	return new Custom(callback);
+}
+
 /** Wave 
   * 
   *

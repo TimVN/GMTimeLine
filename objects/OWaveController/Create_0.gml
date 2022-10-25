@@ -5,6 +5,14 @@ wave = new Wave([
 	spawn(room_width - 200, room_height / 2, 1, 1, OMonster, SpawnMode.Default, { direction: 180 }),
 	await(),
 	delay(0.5),
+	custom(function(event) {
+		var confirm = show_question("Do you want to continue?");
+		
+		if (confirm) {
+			event.finish();
+		}
+	}),
+	await(),
 	spawn(200, 200, 5, 0.1, OMonster, SpawnMode.Destroy),
 	await(),
 	delay(0.5),
