@@ -153,7 +153,7 @@ function Timeline() constructor {
 	_startedAt = undefined;
 	_onFinishCallback = undefined;
 	
-	function onEventFinished(index) {
+	onEventFinished = function(index) {
 		var _inBatch = false;
 		
 		for (var i = 0; i < array_length(_batch); i++) {
@@ -185,13 +185,14 @@ function Timeline() constructor {
 		}
 	}
 	
-	function reset() {
+	reset = function() {
 		_position = 0;
 		_batch = [];
 		_runningEvents = 0;
+		ds_list_clear(global.timed_functions);
 	}
 	
-	function start() {
+	start = function() {
 		if (_startedAt == undefined) {
 			_startedAt = current_time;
 		}
@@ -269,5 +270,29 @@ function Timeline() constructor {
 	// Allows you to listen to when this timeline ends
 	function onFinish(callback) {
 		_onFinishCallback = callback;
+	}
+}
+
+function TimelineBatch(timelines) constructor {
+	_timelines = timelines;
+	_position = 0;
+	
+	onTimelineFinished = function(index) {
+		if (_position < array_length(_timelines)) {
+			show_debug_message("Next item");
+			start();
+		}
+	}
+	
+	start = function() {
+		if (_position < array_length(_timelines)) {
+			_timelines[_position].onFinish(function() {
+				onTimelineFinished();
+			});
+
+			_timelines[_position].start();
+			
+			_position++;
+		}
 	}
 }
