@@ -140,10 +140,9 @@ function Limit(seconds) constructor {
 	}
 }
 
-/** Wave 
-  * 
-  *
-**/
+/// @function                Timeline()
+/// @description             Creates a new timeline
+/// @return {Timeline}
 function Timeline() constructor {
 	_timeline = [];
 	_batch = [];
@@ -192,6 +191,9 @@ function Timeline() constructor {
 		ds_list_clear(global.timed_functions);
 	}
 	
+	/// @function                start()
+	/// @description             Starts/continues the timeline
+	/// @return {Timeline}
 	start = function() {
 		if (_startedAt == undefined) {
 			_startedAt = current_time;
@@ -229,6 +231,8 @@ function Timeline() constructor {
 			// We pass a reference to the timeline and the current batch of events
 			_timeline[_batch[i]].start(self, _batch);
 		}
+		
+		return self;
 	}
 	
 	spawn = function(x, y, amount, interval, obj, mode = SpawnMode.Default, properties = {}) {
@@ -245,8 +249,12 @@ function Timeline() constructor {
 		return self;
 	}
 	
-	// Allows for a delay between events
-	delay = function(seconds, onProgress) {
+	/// @function                delay()
+	/// @description             Allows for a delay between events
+	/// @param {Real}						 seconds The delay in seconds
+	/// @param {Function}				 [onProgress] The function called every frame during the delay passing back remaining time in frames
+	/// @return {self}
+	function delay(seconds, onProgress = undefined) {
 		array_push(_timeline, new Delay(seconds, onProgress));
 		
 		return self;
@@ -268,7 +276,7 @@ function Timeline() constructor {
 	}
 	
 	// Allows you to listen to when this timeline ends
-	function onFinish(callback) {
+	onFinish = function(callback) {
 		_onFinishCallback = callback;
 	}
 }
@@ -277,7 +285,7 @@ function TimelineBatch(timelines) constructor {
 	_timelines = timelines;
 	_position = 0;
 	
-	onTimelineFinished = function(index) {
+	onTimelineFinished = function() {
 		if (_position < array_length(_timelines)) {
 			show_debug_message("Next item");
 			start();
@@ -294,5 +302,21 @@ function TimelineBatch(timelines) constructor {
 			
 			_position++;
 		}
+	}
+}
+
+Foo = function(bar) constructor {
+	_bar = bar;
+	
+	test = function() {
+		
+	}
+}
+
+Bar = function(foo) constructor {
+	_foo = foo;
+	
+	test = function() {
+		
 	}
 }
