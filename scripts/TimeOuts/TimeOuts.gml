@@ -18,7 +18,7 @@ function doTimedFunctions() {
     for (var i = ds_list_size(funcs) - 1; i >= 0; i--) {
         var func = funcs[| i];
         if (func.timer > 0)  {
-            func.timer--;
+            func.timer -= (1 - global.paused);
             if (func.timer == 0) {
                 func.func();
                 delete func;

@@ -1,3 +1,5 @@
+global.paused = false;
+
 function Base() constructor {
 	finish = undefined;
 }
