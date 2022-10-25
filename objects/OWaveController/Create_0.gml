@@ -1,9 +1,11 @@
+global.timeScale = 1;
 timeBeforeNextRound = 0;
 
 wave = new Timeline()
 	.delay(5, function(msLeft) {
 		timeBeforeNextRound = msLeft;
 	})
+	.spawn("", 10, 10, 10, OMonster)
 	.spawn(room_width / 2, 200, 1, 1, OMonster, SpawnMode.Destroy, { direction: 270 })
 	.spawn(room_width / 2, room_height - 200, 1, 1, OMonster, SpawnMode.Destroy, { direction: 90 })
 	.spawn(200, room_height / 2, 1, 1, OMonster, SpawnMode.Destroy, { direction: 0 })
@@ -46,7 +48,7 @@ var secondWave = new Timeline()
 	.spawn(10, 10, 20, 0.2, OMonster, SpawnMode.Default)
 	.await();
 	
-var timeline = new TimelineBatch([secondWave, wave]);
+var timeline = new Sequence([secondWave, wave]);
 
 timeline.start();
 

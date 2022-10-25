@@ -1,5 +1,3 @@
-global.timeScale = 1;
-
 function Base() constructor {
 	// This function is attached later by the parent wave class
 	// It is called by events when they are considered finished
@@ -30,7 +28,7 @@ function Spawn(x, y, amount, interval, obj, mode, properties) constructor {
 		
 		_instanceCount--;
 		
-		// If there's no more instances in this group, and the mode is set to 'Destroy'
+		// If there's no more instances in this group and the mode is set to 'Destroy'
 		// We call the "finish" function. This will continue the timeline of events
 		if (_instanceCount == 0 && _mode == SpawnMode.Destroy) {
 			finish(index);
@@ -71,7 +69,7 @@ function Spawn(x, y, amount, interval, obj, mode, properties) constructor {
 		// We're not done spawning, so we set another timeout that will repeat this function
 		setTimeout(function() {
 			start();
-		}, _interval * room_speed);
+		}, _interval * game_get_speed(gamespeed_fps));
 	}
 }
 
@@ -92,11 +90,11 @@ function Delay(seconds, callback) : Base() constructor {
 	name = "Delay";
 	type = "delay";
 	
-	_delay = seconds * room_speed;
+	_delay = seconds * game_get_speed(gamespeed_fps);
 	_callback = callback;
 	
 	function start() {
-		show_debug_message("Delaying timeline for " + string(_delay / room_speed) + " seconds");
+		show_debug_message("Delaying timeline for " + string(_delay / game_get_speed(gamespeed_fps)) + " seconds");
 		
 		setTimeout(function() {
 			finish(index);
@@ -118,7 +116,7 @@ function Limit(seconds) constructor {
 	name = "Limit";
 	type = "optional";
 	
-	_delay = seconds * room_speed;
+	_delay = seconds * game_get_speed(gamespeed_fps);
 	_runningEvents = 0;
 	
 	function start(item, batch) {
@@ -142,7 +140,7 @@ function Limit(seconds) constructor {
 
 /// @function                Timeline()
 /// @description             Creates a new timeline
-/// @return {Timeline}
+/// @return {Struct.Timeline}
 function Timeline() constructor {
 	_timeline = [];
 	_batch = [];
@@ -155,18 +153,18 @@ function Timeline() constructor {
 	onEventFinished = function(index) {
 		var _inBatch = false;
 		
+		// We need to know if the event with index $index is still part of the active batch
+		// Reason being that adding a limit event to the batch could clear the batch
+		// if the limit is reached before all events in the batch have completed
 		for (var i = 0; i < array_length(_batch); i++) {
 			if (_batch[i] == index) {
 				_inBatch = true;
 			}
 		}
 		
-		if (!_inBatch) {
-			show_debug_message("Event finished but was already removed from batch - " + string(index));
-			
+		// If it's not, there's no reason to have it call start() again
+		if (!_inBatch) {			
 			return;
-		} else {
-			show_debug_message("Event finished and was part of current batch - " + string(index));
 		}
 		
 		_runningEvents = max(0, _runningEvents - 1);
@@ -184,6 +182,7 @@ function Timeline() constructor {
 		}
 	}
 	
+	// todo: Fix this function, clear all running events
 	reset = function() {
 		_position = 0;
 		_batch = [];
@@ -193,9 +192,9 @@ function Timeline() constructor {
 	
 	/// @function                start()
 	/// @description             Starts/continues the timeline
-	/// @return {Timeline}
+	/// @return {Struct.Timeline}
 	start = function() {
-		if (_startedAt == undefined) {
+		if (!_startedAt) {
 			_startedAt = current_time;
 		}
 		
@@ -235,14 +234,25 @@ function Timeline() constructor {
 		return self;
 	}
 	
+	/// @function									spawn()
+	/// @description							Creates a spawn event that will instantiate objects
+	/// @param {Real}							x The x coordinate
+	/// @param {Real}							y The x coordinate
+	/// @param {Real}							amount The amount of objects
+	/// @param {Real}							interval The interval in between the spawning of objects
+	/// @param {Asset.GMObject}		obj The object to be spawned
+	/// @param {Real}							mode The spawn mode
+	/// @param {Struct}						properties Properties to be applied to the spawned objects
+	/// @return {Struct.Timeline}
 	spawn = function(x, y, amount, interval, obj, mode = SpawnMode.Default, properties = {}) {
 		array_push(_timeline, new Spawn(x, y, amount, interval, obj, mode, properties));
 		
 		return self;
 	}
 	
-	// Used to indicate we want the previous batch of events to finish
-	// before continuing
+	/// @function                await()
+	/// @description             Allows you to wait for previous events to complete
+	/// @return {Struct.Timeline}
 	await = function() {
 		array_push(_timeline, new Await());
 		
@@ -253,22 +263,27 @@ function Timeline() constructor {
 	/// @description             Allows for a delay between events
 	/// @param {Real}						 seconds The delay in seconds
 	/// @param {Function}				 [onProgress] The function called every frame during the delay passing back remaining time in frames
-	/// @return {self}
+	/// @return {Struct.Timeline}
 	function delay(seconds, onProgress = undefined) {
 		array_push(_timeline, new Delay(seconds, onProgress));
 		
 		return self;
 	}
 	
-	// Allows for a custom function to be called in between events
-	// The callback passed in gets a reference to this instance as an argument
+	/// @function                delay()
+	/// @description             Allows for a custom function to be called in between events, the function gets called back with the timeline instance as its first argument
+	/// @param {Function}				 callback The function to be called back
+	/// @return {Struct.Timeline}
 	custom = function(callback) {
 		array_push(_timeline, new Custom(callback));
 		
 		return self;
 	}
 	
-	// Sets a time limit in seconds for a batch of events to finish
+	/// @function                delay()
+	/// @description             Sets a time limit in seconds for a batch of events to finish
+	/// @param {Real}						 seconds The limit in seconds
+	/// @return {Struct.Timeline}
 	limit = function(seconds) {
 		array_push(_timeline, new Limit(seconds));
 		
@@ -281,7 +296,11 @@ function Timeline() constructor {
 	}
 }
 
-function TimelineBatch(timelines) constructor {
+/// @function										Sequence()
+/// @description								Creates a new sequence
+/// @param {Struct.Timeline[])	timelines Array of Timelines
+/// @return {Struct.Sequence}
+function Sequence(timelines) constructor {
 	_timelines = timelines;
 	_position = 0;
 	
@@ -292,6 +311,8 @@ function TimelineBatch(timelines) constructor {
 		}
 	}
 	
+	/// @function                start()
+	/// @description						 Starts the sequence
 	start = function() {
 		if (_position < array_length(_timelines)) {
 			_timelines[_position].onFinish(function() {
@@ -302,21 +323,5 @@ function TimelineBatch(timelines) constructor {
 			
 			_position++;
 		}
-	}
-}
-
-Foo = function(bar) constructor {
-	_bar = bar;
-	
-	test = function() {
-		
-	}
-}
-
-Bar = function(foo) constructor {
-	_foo = foo;
-	
-	test = function() {
-		
 	}
 }
