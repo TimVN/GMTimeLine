@@ -1,4 +1,4 @@
-wave = new Wave()
+wave = new Timeline()
 	.spawn(room_width / 2, 200, 1, 1, OMonster, SpawnMode.Destroy, { direction: 270 })
 	.spawn(room_width / 2, room_height - 200, 1, 1, OMonster, SpawnMode.Default, { direction: 90 })
 	.spawn(200, room_height / 2, 1, 1, OMonster, SpawnMode.Default, { direction: 0 })
@@ -6,7 +6,8 @@ wave = new Wave()
 	.await()
 	.delay(0.5)
 	.custom(function(event) {
-		var confirm = show_question("Do you want to continue?")		
+		var confirm = show_question("Do you want to continue?");
+		
 		if (confirm) {
 			event.finish()
 		}
@@ -27,7 +28,4 @@ wave.onFinish(function(data) {
 	show_debug_message(data);
 });
 
-setTimeout(function() {
-	show_debug_message(wave._timeline[0]);
-	wave.start();
-}, room_speed);
+wave.start();
