@@ -160,13 +160,7 @@ function Timeline() constructor {
 			show_debug_message("Starting " + _timeline[i].name + " task. There are now " + string(_runningTasks) + " tasks running");
 			
 			// If the current event is of type 'await' or 'delay', we break out of the loop
-			if (_timeline[i].type == "await" || _timeline[i].type == "delay") {
-				
-				// The await event does not call back
-				if (_timeline[i].type == "await") {
-					// _runningTasks = max(0, _runningTasks - 1);
-				}
-				
+			if (_timeline[i].type == "await" || _timeline[i].type == "delay") {				
 				_position++;
 				
 				break;
