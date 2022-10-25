@@ -33,7 +33,7 @@ function Spawn(x, y, amount, interval, obj, mode, properties) constructor {
 		// If there's no more instances in this group, and the mode is set to 'Destroy'
 		// We call the "finish" function. This will continue the timeline of events
 		if (_instanceCount == 0 && _mode == SpawnMode.Destroy) {
-			finish();
+			finish(index);
 		}
 	}
 	
@@ -62,7 +62,7 @@ function Spawn(x, y, amount, interval, obj, mode, properties) constructor {
 		if (_position == _amount) {
 			// If the Default mode is used, this event is considered finished after spawning all of them
 			if (_mode == SpawnMode.Default) {
-				finish();
+				finish(index);
 			}
 			
 			return;
@@ -84,7 +84,7 @@ function Await() constructor {
 		// want the system to wait for the current batch of events to end
 		show_debug_message("Waiting for active events to complete");
 		
-		finish();
+		finish(index);
 	}
 }
 
@@ -98,7 +98,7 @@ function Delay(seconds) : Base() constructor {
 		show_debug_message("Delaying timeline for " + string(_delay / room_speed) + " seconds");
 		
 		setTimeout(function() {
-			finish();
+			finish(index);
 		}, _delay);
 	}
 }
@@ -109,7 +109,29 @@ function Custom(callback) constructor {
 	_callback = callback;
 	
 	function start() {
-		_callback(self);
+		_callback(self, index);
+	}
+}
+
+function Limit(seconds) constructor {
+	name = "Limit";
+	type = "optional";
+	
+	_delay = seconds * room_speed;
+	_runningEvents = 0;
+	
+	function start(item, batch) {
+		_item = item;
+		_batch = batch;
+		_runningEvents = item._runningEvents;
+		
+		show_debug_message("Running events at start: " + string(item._runningEvents));
+		
+		setTimeout(function() {
+			show_debug_message("Running events now: " + string(_item._runningEvents));
+			_item._runningEvents = max(0, _item._runningEvents - _runningEvents);
+			finish(index);
+		}, _delay);
 	}
 }
 
@@ -119,13 +141,30 @@ function Custom(callback) constructor {
 **/
 function Timeline() constructor {
 	_timeline = [];
+	_batch = [];
 	_position = 0;
 	_runningEvents = 0;
 	
 	_startedAt = undefined;
 	_onFinishCallback = undefined;
 	
-	function onEventFinished() {
+	function onEventFinished(index) {
+		var _inBatch = false;
+		
+		for (var i = 0; i < array_length(_batch); i++) {
+			if (_batch[i] == index) {
+				_inBatch = true;
+			}
+		}
+		
+		if (!_inBatch) {
+			show_debug_message("Event finished but was already removed from batch - " + string(index));
+			
+			return;
+		} else {
+			show_debug_message("Event finished and was part of current batch - " + string(index));
+		}
+		
 		_runningEvents = max(0, _runningEvents - 1);
 		
 		if (_runningEvents == 0) {
@@ -135,8 +174,6 @@ function Timeline() constructor {
 				show_debug_message("Timeline complete");
 				
 				_onFinishCallback({
-					startedAt: _startedAt,
-					endedAt: current_time,
 					duration: current_time - _startedAt,
 				});
 			}
@@ -149,17 +186,18 @@ function Timeline() constructor {
 		}
 		
 		// Used to keep track of events that will be fired simultaneously
-		var batch = [];
+		_batch = [];
 		
 		for (var i = _position; i < array_length(_timeline); i++) {
 			// Add the index of the event to the batch
-			array_push(batch, i);
+			array_push(_batch, i);
 			_position = i;
 			_runningEvents++;
 			
 			// Add a callback to the instance of this wave
-			_timeline[i].finish = function() {
-				onEventFinished();
+			_timeline[i].index = i;
+			_timeline[i].finish = function(index) {
+				onEventFinished(index);
 			};
 			
 			show_debug_message("Starting " + _timeline[i].name + " event. Active events: " + string(_runningEvents));
@@ -174,9 +212,10 @@ function Timeline() constructor {
 		}
 		
 		show_debug_message("_________________________________________________________________________________");
-		for (var i = 0; i < array_length(batch); i++) {
+		for (var i = 0; i < array_length(_batch); i++) {
 			// show_debug_message("Starting timeline item " + string(batch[i])  + " (" + string(_timeline[batch[i]].name) + ")");
-			_timeline[batch[i]].start();
+			// We pass a reference to the timeline and the current batch of events
+			_timeline[_batch[i]].start(self, _batch);
 		}
 	}
 	
@@ -205,6 +244,13 @@ function Timeline() constructor {
 	// The callback passed in gets a reference to this instance as an argument
 	custom = function(callback) {
 		array_push(_timeline, new Custom(callback));
+		
+		return self;
+	}
+	
+	// Sets a time limit in seconds for a batch of events to finish
+	limit = function(seconds) {
+		array_push(_timeline, new Limit(seconds));
 		
 		return self;
 	}
