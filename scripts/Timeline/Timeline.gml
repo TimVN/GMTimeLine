@@ -125,12 +125,12 @@ function Limit(seconds) constructor {
 		_batch = batch;
 		_runningEvents = item._runningEvents;
 		
-		show_debug_message("Running events at start: " + string(item._runningEvents));
+		// We instantly remove this from the timeline, the timeout will still run
+		// If events finish before the timeout, we don't want to be waiting for this timeout
+		finish(index);
 		
 		setTimeout(function() {
-			show_debug_message("Running events now: " + string(_item._runningEvents));
 			_item._runningEvents = max(0, _item._runningEvents - _runningEvents);
-			finish(index);
 		}, _delay);
 	}
 }

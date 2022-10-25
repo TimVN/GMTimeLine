@@ -3,7 +3,7 @@ wave = new Timeline()
 	.spawn(room_width / 2, room_height - 200, 1, 1, OMonster, SpawnMode.Default, { direction: 90 })
 	.spawn(200, room_height / 2, 1, 1, OMonster, SpawnMode.Default, { direction: 0 })
 	.spawn(room_width - 200, room_height / 2, 1, 1, OMonster, SpawnMode.Default, { direction: 180 })
-	.limit(2)
+	.limit(5)
 	.await()
 	.custom(function(event, index) {
 		show_debug_message(current_time);
