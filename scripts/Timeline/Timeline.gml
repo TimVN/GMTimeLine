@@ -82,6 +82,8 @@ function Await() constructor {
 	function start() {
 		// This looks odd, but this event is simply used to indicate we
 		// want the system to wait for the current batch of events to end
+		show_debug_message("Waiting for active events to complete");
+		
 		finish();
 	}
 }
@@ -93,6 +95,8 @@ function Delay(seconds) : Base() constructor {
 	_delay = seconds * room_speed;
 	
 	function start() {
+		show_debug_message("Delaying timeline for " + string(_delay / room_speed) + " seconds");
+		
 		setTimeout(function() {
 			finish();
 		}, _delay);
@@ -116,19 +120,20 @@ function Custom(callback) constructor {
 function Timeline() constructor {
 	_timeline = [];
 	_position = 0;
-	_runningTasks = 0;
+	_runningEvents = 0;
 	
 	_startedAt = undefined;
 	_onFinishCallback = undefined;
 	
-	function onTaskFinish() {
-		_runningTasks = max(0, _runningTasks - 1);
-		// show_debug_message("Finished position " + string(_position) + " with " + string(_runningTasks) + " running tasks left - "  + string(_position) + ":" + string(array_length(_timeline)));
+	function onEventFinished() {
+		_runningEvents = max(0, _runningEvents - 1);
 		
-		if (_runningTasks == 0) {
+		if (_runningEvents == 0) {
 			if (_position < array_length(_timeline) - 1) {
 				start();
 			} else if (_onFinishCallback != undefined) {
+				show_debug_message("Timeline complete");
+				
 				_onFinishCallback({
 					startedAt: _startedAt,
 					endedAt: current_time,
@@ -150,25 +155,25 @@ function Timeline() constructor {
 			// Add the index of the event to the batch
 			array_push(batch, i);
 			_position = i;
-			_runningTasks++;
+			_runningEvents++;
 			
 			// Add a callback to the instance of this wave
 			_timeline[i].finish = function() {
-				onTaskFinish();
+				onEventFinished();
 			};
 			
-			show_debug_message("Starting " + _timeline[i].name + " task. There are now " + string(_runningTasks) + " tasks running");
+			show_debug_message("Starting " + _timeline[i].name + " event. Active events: " + string(_runningEvents));
 			
 			// If the current event is of type 'await' or 'delay', we break out of the loop
-			if (_timeline[i].type == "await" || _timeline[i].type == "delay") {				
+			if (_timeline[i].type == "await" || _timeline[i].type == "delay") {
+				// We also want to skip over this event in the next iteration
 				_position++;
 				
 				break;
 			}
 		}
 		
-		// show_debug_message("Starting a batch with " + string(_runningTasks) + " active tasks");
-		
+		show_debug_message("_________________________________________________________________________________");
 		for (var i = 0; i < array_length(batch); i++) {
 			// show_debug_message("Starting timeline item " + string(batch[i])  + " (" + string(_timeline[batch[i]].name) + ")");
 			_timeline[batch[i]].start();
