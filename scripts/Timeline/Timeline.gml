@@ -2,6 +2,13 @@ function Base() constructor {
 	// This function is attached later by the parent wave class
 	// It is called by events when they are considered finished
 	finish = undefined;
+	index = undefined;
+	
+	/** function start(timeline, batch)
+    * @param {Struct.Timeline}	[timeline]
+		* @param {Array<Real>}			[batch]
+	**/
+	start = function(timeline, batch) {}
 }
 
 enum SpawnMode {
@@ -9,7 +16,7 @@ enum SpawnMode {
 	Destroy,
 }
 
-function Spawn(x, y, amount, interval, obj, mode, properties) constructor {
+function Spawn(x, y, amount, interval, obj, mode, properties) : Base() constructor {
 	name = "Spawn";
 	type = "spawn";
 	_x = x;
@@ -22,6 +29,10 @@ function Spawn(x, y, amount, interval, obj, mode, properties) constructor {
 
 	_position = 0;
 	_instanceCount = 0;
+	
+	static destroy = function(identifier) {
+		
+	}
 	
 	function onDestroy(instanceId) {
 		instance_destroy(instanceId);
@@ -60,6 +71,7 @@ function Spawn(x, y, amount, interval, obj, mode, properties) constructor {
 		if (_position == _amount) {
 			// If the Default mode is used, this event is considered finished after spawning all of them
 			if (_mode == SpawnMode.Default) {
+				// Feather disable once GM1013
 				finish(index);
 			}
 			
@@ -73,7 +85,7 @@ function Spawn(x, y, amount, interval, obj, mode, properties) constructor {
 	}
 }
 
-function Await() constructor {
+function Await() : Base() constructor {
 	name = "Await";
 	type = "await";
 	
@@ -102,7 +114,7 @@ function Delay(seconds, callback) : Base() constructor {
 	}
 }
 
-function Custom(callback) constructor {
+function Custom(callback) : Base() constructor {
 	name = "Custom function";
 	type = "custom";
 	_callback = callback;
@@ -112,7 +124,7 @@ function Custom(callback) constructor {
 	}
 }
 
-function Limit(seconds) constructor {
+function Limit(seconds) : Base() constructor {
 	name = "Limit";
 	type = "optional";
 	
@@ -138,14 +150,34 @@ function Limit(seconds) constructor {
 	}
 }
 
+function WaitForInput(key) : Base() constructor {
+	name = "Wait for input";
+	type = "delay";
+	
+	_key = key;
+	
+	function start() {
+		var input = instance_create_layer(0, 0, "Instances", OInput);
+		
+		input.key = _key;
+		input.finish = finish;
+	}
+}
+
 /// @function                Timeline()
 /// @description             Creates a new timeline
 /// @return {Struct.Timeline}
 function Timeline() constructor {
-	_timeline = [];
+	_timeline = [new Base()];
 	_batch = [];
 	_position = 0;
 	_runningEvents = 0;
+	
+	// This seems odd, but as of now, Feather only allows for describing script functions
+	// Every Timeline item is an extension of the Base struct. To satisfy Feather, _timeline
+	// contains a Base struct, which we remove on instantiation.
+	// As soon as Feather allows for variable descriptions, this should be removed
+	array_delete(_timeline, 0, 1);
 	
 	_startedAt = undefined;
 	_onFinishCallback = undefined;
@@ -194,7 +226,7 @@ function Timeline() constructor {
 	/// @description             Starts/continues the timeline
 	/// @return {Struct.Timeline}
 	start = function() {
-		if (!_startedAt) {
+		if (typeof(_startedAt) == "undefined") {
 			_startedAt = current_time;
 		}
 		
@@ -234,7 +266,7 @@ function Timeline() constructor {
 		return self;
 	}
 	
-	/// @function									spawn()
+	/// @function									spawn(x, y, amount, interval, obj, mode, properties)
 	/// @description							Creates a spawn event that will instantiate objects
 	/// @param {Real}							x The x coordinate
 	/// @param {Real}							y The x coordinate
@@ -259,18 +291,18 @@ function Timeline() constructor {
 		return self;
 	}
 	
-	/// @function                delay()
+	/// @function                delay(seconds, onProgress)
 	/// @description             Allows for a delay between events
 	/// @param {Real}						 seconds The delay in seconds
 	/// @param {Function}				 [onProgress] The function called every frame during the delay passing back remaining time in frames
 	/// @return {Struct.Timeline}
-	function delay(seconds, onProgress = undefined) {
+	delay = function(seconds, onProgress = undefined) {
 		array_push(_timeline, new Delay(seconds, onProgress));
 		
 		return self;
 	}
 	
-	/// @function                delay()
+	/// @function                custom(callback)
 	/// @description             Allows for a custom function to be called in between events, the function gets called back with the timeline instance as its first argument
 	/// @param {Function}				 callback The function to be called back
 	/// @return {Struct.Timeline}
@@ -280,7 +312,7 @@ function Timeline() constructor {
 		return self;
 	}
 	
-	/// @function                delay()
+	/// @function                limit(seconds)
 	/// @description             Sets a time limit in seconds for a batch of events to finish
 	/// @param {Real}						 seconds The limit in seconds
 	/// @return {Struct.Timeline}
@@ -296,9 +328,9 @@ function Timeline() constructor {
 	}
 }
 
-/// @function										Sequence()
+/// @function										Sequence(timelines)
 /// @description								Creates a new sequence
-/// @param {Struct.Timeline[])	timelines Array of Timelines
+/// @param {[Struct.Timeline])	timelines Array of Timelines
 /// @return {Struct.Sequence}
 function Sequence(timelines) constructor {
 	_timelines = timelines;
@@ -323,5 +355,21 @@ function Sequence(timelines) constructor {
 			
 			_position++;
 		}
+	}
+}
+
+function Input() {
+	static _listeners = [];
+	
+	static step = function() {
+		for (var i = 0; i < array_length(Input._listeners); i++) {
+			if (keyboard_check_pressed(_listeners[i].key)) {
+				_listeners[i].callback();
+			}
+		}
+	}
+	
+	static addListener = function(key, callback) {
+		array_push(Input._listeners, { key: key, callback: callback });
 	}
 }

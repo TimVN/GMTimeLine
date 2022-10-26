@@ -5,6 +5,7 @@
   "resources": [
     {"id":{"name":"OMonster","path":"objects/OMonster/OMonster.yy",},"order":1,},
     {"id":{"name":"TimeOuts","path":"scripts/TimeOuts/TimeOuts.yy",},"order":1,},
+    {"id":{"name":"OInput","path":"objects/OInput/OInput.yy",},"order":2,},
     {"id":{"name":"OWaveController","path":"objects/OWaveController/OWaveController.yy",},"order":0,},
     {"id":{"name":"Timeline","path":"scripts/Timeline/Timeline.yy",},"order":0,},
     {"id":{"name":"RTowerDefense","path":"rooms/RTowerDefense/RTowerDefense.yy",},"order":0,},

@@ -1,18 +1,20 @@
 global.timeScale = 1;
 timeBeforeNextRound = 0;
 
+var updateTime = function(msLeft) {
+	timeBeforeNextRound = msLeft;
+}
+
 wave = new Timeline()
-	.delay(5, function(msLeft) {
-		timeBeforeNextRound = msLeft;
-	})
-	.spawn("", 10, 10, 10, OMonster)
+	.delay(5, updateTime)
+	.delay(5, updateTime)
 	.spawn(room_width / 2, 200, 1, 1, OMonster, SpawnMode.Destroy, { direction: 270 })
 	.spawn(room_width / 2, room_height - 200, 1, 1, OMonster, SpawnMode.Destroy, { direction: 90 })
 	.spawn(200, room_height / 2, 1, 1, OMonster, SpawnMode.Destroy, { direction: 0 })
 	.spawn(room_width - 200, room_height / 2, 1, 1, OMonster, SpawnMode.Destroy, { direction: 180 })
 	.limit(10)
 	.await()
-	.delay(2)
+	.delay(1)
 	/*.custom(function(event, index) {
 		show_debug_message(current_time);
 		var confirm = show_question("Do you want to continue?");
@@ -29,13 +31,11 @@ wave = new Timeline()
 	.spawn(200, 225, 1, 1, OMonster)
 	.spawn(200, 250, 3, 1, OMonster)
 	.await()
-	.delay(2)
+	.delay(22)
 	.spawn(250, 225, 10, 0.1, OMonster, SpawnMode.Destroy)
 	.spawn(250, 275, 10, 0.1, OMonster, SpawnMode.Destroy)
 	.await()
-	.delay(30, function(msLeft) {
-		timeBeforeNextRound = msLeft;
-	})
+	.delay(30, updateTime)
 	.await();
 
 /*wave.onFinish(function(data) {
@@ -45,7 +45,7 @@ wave = new Timeline()
 });*/
 
 var secondWave = new Timeline()
-	.spawn(10, 10, 20, 0.2, OMonster, SpawnMode.Default)
+	.spawn(10, 10, 2, 0.2, OMonster, SpawnMode.Default)
 	.await();
 	
 var timeline = new Sequence([secondWave, wave]);
