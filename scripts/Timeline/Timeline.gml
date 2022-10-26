@@ -114,13 +114,15 @@ function Delay(seconds, callback) : Base() constructor {
 	}
 }
 
-function Custom(callback) : Base() constructor {
+function Once(callback) : Base() constructor {
 	name = "Custom function";
-	type = "custom";
+	type = "delay";
 	_callback = callback;
 	
 	function start() {
-		_callback(self, index);
+		_callback(function() {
+			finish(index);
+		});
 	}
 }
 
@@ -180,6 +182,23 @@ function KeyReleased(input, key) : Base() constructor {
 	function start() {
 		_input.addKeyReleaseListener(_key, function() {
 			finish(index);
+		});
+	}
+}
+
+/// @function											Every(input, callback)
+/// @param		{Struct.Input}			input
+/// @param		{Function}					callback
+function Every(input, callback) : Base() constructor {
+	name = "Every";
+	type = "delay";
+	
+	_input = input;
+	_callback = callback;
+	
+	function start() {
+		_input.addWatcher(_callback, function() {
+			finish(index)
 		});
 	}
 }
@@ -325,12 +344,13 @@ function Timeline(input = undefined) constructor {
 		return self;
 	}
 	
-	/// @function                custom(callback)
-	/// @description             Allows for a custom function to be called in between events, the function gets called back with the timeline instance as its first argument
+	/// @function                once(callback)
+	/// @description             Allows for a custom function to be called in between events, 
+	/// the function gets called back a callback function that can be called to proceed with the timeline
 	/// @param {Function}				 callback The function to be called back
 	/// @return {Struct.Timeline}
-	custom = function(callback) {
-		array_push(_timeline, new Custom(callback));
+	once = function(callback) {
+		array_push(_timeline, new Once(callback));
 		
 		return self;
 	}
@@ -345,7 +365,7 @@ function Timeline(input = undefined) constructor {
 		return self;
 	}
 	
-	/// @function													function(key)
+	/// @function													keyPress(key)
 	/// @description											Waits for a key to be pressed
 	/// @param {Constant.VirtualKey|Real}	key Virtual key index
 	/// @return {Struct.Timeline}
@@ -355,12 +375,23 @@ function Timeline(input = undefined) constructor {
 		return self;
 	}
 	
-	/// @function													function(key)
+	/// @function													keyReleased(key)
 	/// @description											Waits for a key to be released
 	/// @param {Constant.VirtualKey|Real}	key Virtual key index
 	/// @return {Struct.Timeline}
 	keyReleased = function(key) {
 		array_push(_timeline, new KeyReleased(_input, key));
+		
+		return self;
+	}
+	
+	/// @function													every(func)
+	/// @description											Allows for a function to be run every step
+	/// @param {Function}					func		Function to run every step - will be passed a function
+	/// to indicate that the function is done and the timeline can proceed
+	/// @return {Struct.Timeline}
+	every = function(func) {
+		array_push(_timeline, new Every(_input, func));
 		
 		return self;
 	}
@@ -404,6 +435,7 @@ function Sequence(timelines) constructor {
 function Input() constructor {
 	static _keyPressedListeners = [];
 	static _keyReleasedListeners = [];
+	static _watchers = [];
 	
 	static step = function() {
 		var _keyPressedBatch = [];
@@ -428,6 +460,14 @@ function Input() constructor {
 		for (var i = 0; i < array_length(_keyReleasedBatch); i++) {
 			_keyReleasedListeners[_keyReleasedBatch[i]].callback();
 		}
+		
+		for (var i = 0; i < array_length(_watchers); i++) {
+			_watchers[i].func(_watchers[i].done);
+		}
+	}
+	
+	static addWatcher = function(func, done) {
+		array_push(_watchers, { func: func, done: done });
 	}
 	
 	static addKeyUpListener = function(key, callback) {

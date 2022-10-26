@@ -48,7 +48,17 @@ wave = new Timeline(input)
 });*/
 
 var secondWave = new Timeline(input)
-	.keyReleased(vk_enter)
+	.every(function(done) {
+		if (keyboard_check_pressed(vk_shift)) {
+			done();
+		}
+	})
+	.once(function(done) {
+		show_debug_message("Custom function");
+		done();
+	})
+	// .keyPress(vk_enter)
+	// .keyReleased(vk_enter)
 	.spawn(10, 10, 2, 0.2, OMonster, SpawnMode.Default)
 	.await();
 	
