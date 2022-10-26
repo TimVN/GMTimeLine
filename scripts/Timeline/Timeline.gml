@@ -150,24 +150,47 @@ function Limit(seconds) : Base() constructor {
 	}
 }
 
-function WaitForInput(key) : Base() constructor {
-	name = "Wait for input";
+/// @function													WaitForInput(input, key)
+/// @param		{Struct.Input}					input
+/// @param		{Constant.VirtualKey}		key
+function KeyPress(input, key) : Base() constructor {
+	name = "Wait for key up";
 	type = "delay";
 	
 	_key = key;
+	_input = input;
 	
 	function start() {
-		var input = instance_create_layer(0, 0, "Instances", OInput);
-		
-		input.key = _key;
-		input.finish = finish;
+		_input.addKeyUpListener(_key, function() {
+			finish(index);
+		});
 	}
 }
 
-/// @function                Timeline()
-/// @description             Creates a new timeline
+/// @function													WaitForInput(input, key)
+/// @param		{Struct.Input}					input
+/// @param		{Constant.VirtualKey}		key
+function KeyReleased(input, key) : Base() constructor {
+	name = "Wait for key release";
+	type = "delay";
+	
+	_key = key;
+	_input = input;
+	
+	function start() {
+		_input.addKeyReleaseListener(_key, function() {
+			finish(index);
+		});
+	}
+}
+
+/// @function									Timeline()
+/// @description							Creates a new timeline
+/// @param										{Struct.Input}	input	Input listener to use for this timeline
 /// @return {Struct.Timeline}
-function Timeline() constructor {
+function Timeline(input = undefined) constructor {
+	_input = input;
+	
 	_timeline = [new Base()];
 	_batch = [];
 	_position = 0;
@@ -322,6 +345,26 @@ function Timeline() constructor {
 		return self;
 	}
 	
+	/// @function													function(key)
+	/// @description											Waits for a key to be pressed
+	/// @param {Constant.VirtualKey|Real}	key Virtual key index
+	/// @return {Struct.Timeline}
+	keyPress = function(key) {
+		array_push(_timeline, new KeyPress(_input, key));
+		
+		return self;
+	}
+	
+	/// @function													function(key)
+	/// @description											Waits for a key to be released
+	/// @param {Constant.VirtualKey|Real}	key Virtual key index
+	/// @return {Struct.Timeline}
+	keyReleased = function(key) {
+		array_push(_timeline, new KeyReleased(_input, key));
+		
+		return self;
+	}
+	
 	// Allows you to listen to when this timeline ends
 	onFinish = function(callback) {
 		_onFinishCallback = callback;
@@ -358,18 +401,40 @@ function Sequence(timelines) constructor {
 	}
 }
 
-function Input() {
-	static _listeners = [];
+function Input() constructor {
+	static _keyPressedListeners = [];
+	static _keyReleasedListeners = [];
 	
 	static step = function() {
-		for (var i = 0; i < array_length(Input._listeners); i++) {
-			if (keyboard_check_pressed(_listeners[i].key)) {
-				_listeners[i].callback();
+		var _keyPressedBatch = [];
+		var _keyReleasedBatch = [];
+		
+		for (var i = 0; i < array_length(_keyPressedListeners); i++) {
+			if (keyboard_check_pressed(_keyPressedListeners[i].key)) {
+				array_push(_keyPressedBatch, i);
 			}
+		}
+		
+		for (var i = 0; i < array_length(_keyReleasedListeners); i++) {
+			if (keyboard_check_released(_keyReleasedListeners[i].key)) {
+				array_push(_keyReleasedBatch, i);
+			}
+		}
+		
+		for (var i = 0; i < array_length(_keyPressedBatch); i++) {
+			_keyPressedListeners[_keyPressedBatch[i]].callback();
+		}
+		
+		for (var i = 0; i < array_length(_keyReleasedBatch); i++) {
+			_keyReleasedListeners[_keyReleasedBatch[i]].callback();
 		}
 	}
 	
-	static addListener = function(key, callback) {
-		array_push(Input._listeners, { key: key, callback: callback });
+	static addKeyUpListener = function(key, callback) {
+		array_push(_keyPressedListeners, { key: key, callback: callback });
+	}
+	
+	static addKeyReleaseListener = function(key, callback) {
+		array_push(_keyReleasedListeners, { key: key, callback: callback });
 	}
 }

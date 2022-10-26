@@ -1,11 +1,14 @@
 global.timeScale = 1;
 timeBeforeNextRound = 0;
 
+input = new Input();
+
 var updateTime = function(msLeft) {
 	timeBeforeNextRound = msLeft;
 }
 
-wave = new Timeline()
+wave = new Timeline(input)
+	.keyPress(vk_enter)
 	.delay(5, updateTime)
 	.delay(5, updateTime)
 	.spawn(room_width / 2, 200, 1, 1, OMonster, SpawnMode.Destroy, { direction: 270 })
@@ -44,7 +47,8 @@ wave = new Timeline()
 	show_debug_message("The timeline took " + string(seconds) + " seconds to complete");
 });*/
 
-var secondWave = new Timeline()
+var secondWave = new Timeline(input)
+	.keyReleased(vk_enter)
 	.spawn(10, 10, 2, 0.2, OMonster, SpawnMode.Default)
 	.await();
 	
