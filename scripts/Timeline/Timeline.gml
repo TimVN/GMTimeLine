@@ -136,9 +136,10 @@ function Limit(seconds) : Base() constructor {
 	}
 }
 
-/// @function													WaitForInput(input, key)
-/// @param		{Struct.Input}					input
-/// @param		{Constant.VirtualKey}		key
+/** @function													WaitForInput(input, key)
+  * @param		{Struct.Input}					input
+  * @param		{Constant.VirtualKey}		key
+	*/
 function KeyPress(input, key) : Base() constructor {
 	name = "Wait for key up";
 	type = "delay";
@@ -153,9 +154,10 @@ function KeyPress(input, key) : Base() constructor {
 	}
 }
 
-/// @function													WaitForInput(input, key)
-/// @param		{Struct.Input}					input
-/// @param		{Constant.VirtualKey}		key
+/** @function													WaitForInput(input, key)
+  * @param		{Struct.Input}					input
+  * @param		{Constant.VirtualKey}		key
+	*/
 function KeyReleased(input, key) : Base() constructor {
 	name = "Wait for key release";
 	type = "delay";
@@ -184,10 +186,11 @@ function Once(callback, data) : Base() constructor {
 	}
 }
 
-/// @function											Every(input, callback)
-/// @param		{Struct.Input}			input
-/// @param		{Function}					callback
-/// @param		{Struct.Any}				data
+/** @function											Every(input, callback)
+  * @param		{Struct.Input}			input
+  * @param		{Function}					callback
+  * @param		{Struct.Any}				data
+	*/
 function Every(input, callback, data) : Base() constructor {
 	name = "Every";
 	type = "function";
@@ -203,20 +206,24 @@ function Every(input, callback, data) : Base() constructor {
 	}
 }
 
-/// @function									Timeline()
-/// @description							Creates a new timeline
-/// @param										{Struct.Input}	input	Input listener to use for this timeline
-/// @return {Struct.Timeline}
+/** @function									Timeline()
+  * @description							Creates a new timeline
+  * @param										{Struct.Input}	input	Input listener to use for this timeline
+  * @return {Struct.Timeline}
+	*/
 function Timeline() constructor {
 	_timeline = [new Base()];
 	_batch = [];
 	_position = 0;
 	_runningEvents = 0;
 	
+	// Used for storing any data to be shared among events
+	_storage = {};
+	
 	// This seems odd, but as of now, Feather only allows for describing script functions
 	// Every Timeline item is an extension of the Base struct. To satisfy Feather, _timeline
 	// contains a Base struct, which we remove on instantiation.
-	// As soon as Feather allows for variable descriptions, this should be removed
+	// todo:  As soon as Feather allows for variable descriptions, this should be removed
 	array_delete(_timeline, 0, 1);
 	
 	_startedAt = undefined;
@@ -279,9 +286,10 @@ function Timeline() constructor {
 		ds_list_clear(global.timed_functions);
 	}
 	
-	/// @function                start()
-	/// @description             Starts/continues the timeline
-	/// @return {Struct.Timeline}
+	/** @function                start()
+	  * @description             Starts/continues the timeline
+	  * @return {Struct.Timeline}
+		*/
 	start = function() {
 		if (typeof(_startedAt) == "undefined") {
 			_startedAt = current_time;
@@ -331,94 +339,105 @@ function Timeline() constructor {
 		return self;
 	}
 	
-	/// @function									instantiate(x, y, amount, interval, obj, mode, properties)
-	/// @description							Creates an Instantiate event that will instantiate objects
-	/// @param {Real}							x The x coordinate
-	/// @param {Real}							y The x coordinate
-	/// @param {Real}							amount The amount of objects
-	/// @param {Real}							interval The interval in between the instantiation of objects
-	/// @param {Asset.GMObject}		obj The object to be instantiated
-	/// @param {Real}							mode The waiting mode
-	/// @param {Struct}						properties Properties to be applied to the instantiated objects
-	/// @return {Struct.Timeline}
+	/** @function									instantiate(x, y, amount, interval, obj, mode, properties)
+	  * @description							Instantiate objects
+	  * @param {Real}							x The x coordinate
+	  * @param {Real}							y The x coordinate
+	  * @param {Real}							amount The amount of objects
+	  * @param {Real}							interval The interval in between the instantiation of objects
+	  * @param {Asset.GMObject}		obj The object to be instantiated
+	  * @param {Real}							mode The waiting mode
+	  * @param {Struct}						properties Properties to be applied to the instantiated objects
+	  * @return {Struct.Timeline}
 	instantiate = function(x, y, amount, interval, obj, mode = WaitingMode.Default, properties = {}) {
 		array_push(_timeline, new Instantiate(x, y, amount, interval, obj, mode, properties));
 		
 		return self;
 	}
 	
-	/// @function                await()
-	/// @description             Allows you to wait for previous events to complete
-	/// @return {Struct.Timeline}
+	/** @function                await()
+	  * @description             Allows you to wait for previous events to complete
+	  * @return {Struct.Timeline}
+		*/
 	await = function() {
 		array_push(_timeline, new Await());
 		
 		return self;
 	}
 	
-	/// @function                delay(seconds, onProgress)
-	/// @description             Allows for a delay between events
-	/// @param {Real}						 seconds The delay in seconds
-	/// @param {Function}				 [onProgress] The function called every frame during the delay passing back remaining time in frames
-	/// @return {Struct.Timeline}
+	/** @function                delay(seconds, onProgress)
+	  * @description             Allows for a delay between events
+	  * @param {Real}						 seconds The delay in seconds
+	  * @param {Function}				 [onProgress] The function called every frame during the delay passing back remaining time in frames
+		* @return {Struct.Timeline}
+		*/
 	delay = function(seconds, onProgress = undefined) {
 		array_push(_timeline, new Delay(seconds, onProgress));
 		
 		return self;
 	}
 	
-	/// @function                limit(seconds)
-	/// @description             Sets a time limit in seconds for a batch of events to finish
-	/// @param {Real}						 seconds The limit in seconds
-	/// @return {Struct.Timeline}
+	/** @function                limit(seconds)
+	  * @description             Sets a time limit in seconds for a batch of events to finish
+	  * @param {Real}						 seconds The limit in seconds
+	  * @return {Struct.Timeline}
+		*/
 	limit = function(seconds) {
 		array_push(_timeline, new Limit(seconds));
 		
 		return self;
 	}
 	
-	/// @function													keyPress(key)
-	/// @description											Waits for a key to be pressed
-	/// @param {Constant.VirtualKey|Real}	key Virtual key index
-	/// @return {Struct.Timeline}
+	/** @function													keyPress(key)
+	  * @description											Waits for a key to be pressed
+	  * @param {Constant.VirtualKey|Real}	key Virtual key index
+	  * @return {Struct.Timeline}
+		*/
 	keyPress = function(key) {
 		array_push(_timeline, new KeyPress(_input, key));
 		
 		return self;
 	}
 	
-	/// @function													keyReleased(key)
-	/// @description											Waits for a key to be released
-	/// @param {Constant.VirtualKey|Real}	key Virtual key index
-	/// @return {Struct.Timeline}
+	/** @function													keyReleased(key)
+	  * @description											Waits for a key to be released
+	  * @param {Constant.VirtualKey|Real}	key Virtual key index
+	  * @return {Struct.Timeline}
+		*/
 	keyReleased = function(key) {
 		array_push(_timeline, new KeyReleased(_input, key));
 		
 		return self;
 	}
 	
-	/// @function													every(func)
-	/// @description											Allows for a function to be run every step
-	/// @param {Function}					func		Function to run every step - will be passed a function
-	/// to indicate that the function is done and the timeline can proceed
-	/// @param {Struct.Any}								data Data to be passed to the callback function
-	/// @return {Struct.Timeline}
+	/** @function													every(func)
+	  * @description											Allows for a function to be run every step
+	  * @param {Function}					func		Function to run every step - will be passed a function
+	  * to indicate that the function is done and the timeline can proceed
+	  * @param {Struct.Any}								data Data to be passed to the callback function
+	  * @return {Struct.Timeline}
+		*/
 	every = function(func, data = {}) {
 		array_push(_timeline, new Every(_input, func, data));
 		
 		return self;
 	}
 	
-	/// @function									once(callback)
-	/// @description							Allows for a custom function to be called in between events, 
-	/// the function gets called	back a callback function that can be called to proceed with the timeline
-	/// @param {Function}					callback The function to be called back
-	/// @param {Struct.Any}				data Data to be passed to the callback function
-	/// @return {Struct.Timeline}
+	/** @function									once(callback)
+	  * @description							Allows for a custom function to be called in between events, 
+	  * the function gets called	back a callback function that can be called to proceed with the timeline
+	  * @param {Function}					callback The function to be called back
+	  * @param {Struct.Any}				data Data to be passed to the callback function
+	  * @return {Struct.Timeline}
+		*/
 	once = function(callback, data = {}) {
 		array_push(_timeline, new Once(callback, data));
 		
 		return self;
+	}
+	
+	store = function() {
+		
 	}
 	
 	// Allows you to listen to when this timeline ends
@@ -426,40 +445,57 @@ function Timeline() constructor {
 		_onFinishCallback = callback;
 	}
 	
-	/// @function release()
-	/// @description Stops the timeline from further processing any input/functions
+	/** @function release()
+	  * @description Stops the timeline from further processing any input/functions
+		*/
 	release = function() {
 		_process = false;
 	}
 }
 
-/// @function										Sequence(timelines)
-/// @description								Creates a new sequence
-/// @param {[Struct.Timeline])	timelines Array of Timelines
-/// @return {Struct.Sequence}
+/** @function										Sequence(timelines)
+  * @description								Creates a new sequence
+  * @param {[Struct.Timeline])	timelines Array of Timelines
+  * @return {Struct.Sequence}
+	*/
 function Sequence(timelines) constructor {
 	_timelines = timelines;
 	_position = 0;
 	
-	onTimelineFinished = function() {
+	_onFinishListeners = [];
+	_duration = 0;
+	
+	onTimelineFinished = function(data) {
+		_duration += data.duration;
+		
 		if (_position < array_length(_timelines)) {
-			show_debug_message("Next item");
-			start();
+			return start();
+		}
+		
+		for (var i = 0; i < array_length(_onFinishListeners); i++) {
+			_onFinishListeners[i]({
+				duration: _duration	
+			});
 		}
 	}
 	
-	/// @function                start()
-	/// @description						 Starts the sequence
+	/** @function                start()
+	  * @description						 Starts the sequence
+		*/
 	start = function() {
 		if (_position < array_length(_timelines)) {
-			_timelines[_position].onFinish(function() {
-				onTimelineFinished();
+			_timelines[_position].onFinish(function(data) {
+				onTimelineFinished(data);
 			});
 
 			_timelines[_position].start();
 			
 			_position++;
 		}
+	}
+	
+	onFinish = function(callback) {
+		array_push(_onFinishListeners, callback);
 	}
 }
 
