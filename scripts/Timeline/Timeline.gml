@@ -296,7 +296,7 @@ function Timeline() constructor {
 		for (var i = _position; i < array_length(_timeline); i++) {
 			// Add the index of the event to the batch
 			array_push(_batch, i);
-			_position++;
+			_position = i;
 			_runningEvents++;
 			
 			// Add a callback to the instance of this wave
@@ -313,6 +313,10 @@ function Timeline() constructor {
 				_position++;
 				
 				break;
+			}
+			
+			if (_position == array_length(_timeline) - 1) {
+				_position++;
 			}
 		}
 		

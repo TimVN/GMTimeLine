@@ -125,6 +125,10 @@ test = new Timeline()
 		
 		done();
 	});
+	
+test.onFinish(function(data) {
+	show_debug_message(data);
+});
 
 setTimeout(function() {
 	test.start();
