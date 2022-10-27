@@ -109,6 +109,7 @@ test = new Timeline()
 		global.timeScale = data.timer / 50;
 		
 		if (data.timer == 200) {
+			OLog.logString("Timer completed");
 			done();
 		}
 	},
@@ -120,14 +121,18 @@ test = new Timeline()
 	})
 	.await()
 	.once(function(done) {
-		OLog.logString("Timeline finished");
+		OLog.logString("Timeline finished\nReset timescale to 1");
 		global.timeScale = 1;
 		
 		done();
 	});
 	
 test.onFinish(function(data) {
-	show_debug_message(data);
+	// Stop the timeline from further processing any input checks and functions
+	test.release();
+	// data contains a property "duration" that contains the time it took to process the timeline in ms
+	// duration is measured from start to finish and will not account for pauses (timeScale 0)
+	show_debug_message("Timeline processed in " + string(data.duration / 1000) + " seconds");
 });
 
 setTimeout(function() {

@@ -227,12 +227,15 @@ function Timeline() constructor {
 	_onFinishCallback = undefined;
 	
 	_input = new Input();
+	_process = true;
 	
 	function step() {
 		setTimeout(function() {
 			// This recursive function will run every step and is used to process input and custom functions
 			_input.step();
-			step();
+			if (_process) {
+				step();
+			}
 		}, 1);
 	}
 
@@ -425,6 +428,12 @@ function Timeline() constructor {
 	// Allows you to listen to when this timeline ends
 	onFinish = function(callback) {
 		_onFinishCallback = callback;
+	}
+	
+	/// @function release()
+	/// @description Stops the timeline from further processing any input/functions
+	release = function() {
+		_process = false;
 	}
 }
 
