@@ -124,10 +124,19 @@ setTimeout(function() {
       <p>Starts/continues the timeline</p>
    </dd>
    <dd>
-   <dt><a href="#await()"> await()</a> ⇒ <code>Struct.Timeline</code></dt>
-   <p>Creates an Instantiate event that will instantiate objects</p>
+   <dt><a href="#await"> await()</a> ⇒ <code>Struct.Timeline</code></dt>
+   <dd>
+      <p>Creates an Instantiate event that will instantiate objects</p>
    </dd>
-   <dt><a href="#instantiate(x, y, amount, interval, obj, mode, properties)"> instantiate(x, y, amount, interval, obj, mode, properties)</a> ⇒ <code>Struct.Timeline</code></dt>
+   <dt><a href="#delay"> delay(seconds, [callback])</a> ⇒ <code>Struct.Timeline</code></dt>
+   <dd>
+      <p>Delays events from further execution</p>
+   </dd>
+   <dt><a href="#limit"> limit(seconds)</a> ⇒ <code>Struct.Timeline</code></dt>
+   <dd>
+      <p>Limits time for previous batch of events to finish. Takes timescale into account. If limit is reached, the timeline will proceed as if the previous batch completed</p>
+   </dd>
+   <dt><a href="#instantiate"> instantiate(x, y, amount, interval, obj, mode, properties)</a> ⇒ <code>Struct.Timeline</code></dt>
    <dd>
       <p>Creates an Instantiate event that will instantiate objects</p>
    </dd>
@@ -168,25 +177,11 @@ Creates a new timeline
 
 Starts/continues the timeline
 
-<a name="start"></a>
+<a name="await"></a>
 
 ## await() ⇒ <code>Struct.Timeline</code>
 
 Waits for previous events to finish
-
-## instantiate(x, y, amount, interval, obj, mode, properties) ⇒ <code>Struct.Timeline</code>
-
-Will instantiate objects at the specified interval
-
-| Param      | Type                     | Description                          |
-| ---------- | ------------------------ | ------------------------------------ |
-| x          | <code>Real</code>        | x coordinate to spawn instance at    |
-| y          | <code>Real</code>        | y coordinate to spawn instance at    |
-| amount     | <code>Real</code>        | Amount of instances to spawn         |
-| interval   | <code>Real</code>        | Interval between each instance       |
-| obj        | <code>Object</code>      | Object to instantiate                |
-| mode       | <code>WaitingMode</code> | Waiting mode                         |
-| properties | <code>Struct</code>      | Properties to apply to each instance |
 
 <a name="delay"></a>
 
@@ -229,6 +224,22 @@ Waits for a key to be released
 | ----- | ----------------------------------------------------- | ----------------- |
 | key   | <code>Constant.VirtualKey</code> \| <code>Real</code> | Virtual key index |
 
+<a name="instantiate"></a>
+
+## instantiate(x, y, amount, interval, obj, mode, properties) ⇒ <code>Struct.Timeline</code>
+
+Will instantiate objects at the specified interval
+
+| Param      | Type                     | Description                          |
+| ---------- | ------------------------ | ------------------------------------ |
+| x          | <code>Real</code>        | x coordinate to spawn instance at    |
+| y          | <code>Real</code>        | y coordinate to spawn instance at    |
+| amount     | <code>Real</code>        | Amount of instances to spawn         |
+| interval   | <code>Real</code>        | Interval between each instance       |
+| obj        | <code>Object</code>      | Object to instantiate                |
+| mode       | <code>WaitingMode</code> | Waiting mode                         |
+| properties | <code>Struct</code>      | Properties to apply to each instance |
+
 <a name="every"></a>
 
 ## every(func, data) ⇒ <code>Struct.Timeline</code>
@@ -254,7 +265,7 @@ the function gets **called back a with callback function that can be called to p
 
 <a name="onFinish"></a>
 
-## onFinish(callback)
+## onFinish(callback) ⇒ <code>void</code>
 
 Allow you to pass a function to be called when the timeline is finished
 
