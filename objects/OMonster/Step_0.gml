@@ -1,0 +1,1 @@
+speed = 4 * global.timeScale;
