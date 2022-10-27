@@ -85,8 +85,7 @@ var test = new Timeline()
 		
 		done();
 	})
-	.await()
-	.delay(1, updateTime)
+	.delay(5, updateTime)
 	.every(function(done, data) {
 		data.timer++;
 		
@@ -95,7 +94,8 @@ var test = new Timeline()
 		if (data.timer == 200) {
 			done();
 		}
-	}, {
+	},
+	{
 		timer: 0
 	})
 	.spawn(room_width / 2, room_height / 2, 50, 1, OMonster, SpawnMode.Destroy, {

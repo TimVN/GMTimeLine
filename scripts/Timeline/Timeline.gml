@@ -414,6 +414,7 @@ function Timeline() constructor {
 	/// @return {Struct.Timeline}
 	once = function(callback, data = {}) {
 		array_push(_timeline, new Once(callback, data));
+		await();
 		
 		return self;
 	}
