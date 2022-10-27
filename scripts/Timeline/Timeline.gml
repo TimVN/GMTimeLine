@@ -114,20 +114,6 @@ function Delay(seconds, callback) : Base() constructor {
 	}
 }
 
-function Once(callback, data) : Base() constructor {
-	name = "Custom function";
-	type = "function";
-	
-	_callback = callback;
-	_data = data;
-	
-	function start() {
-		_callback(function() {
-			finish(index);
-		}, _data);
-	}
-}
-
 function Limit(seconds) : Base() constructor {
 	name = "Limit";
 	type = "optional";
@@ -185,6 +171,20 @@ function KeyReleased(input, key) : Base() constructor {
 		_input.addKeyReleaseListener(_key, function() {
 			finish(index);
 		});
+	}
+}
+
+function Once(callback, data) : Base() constructor {
+	name = "Custom function";
+	type = "ignore";
+	
+	_callback = callback;
+	_data = data;
+	
+	function start() {
+		_callback(function() {
+			finish(index);
+		}, _data);
 	}
 }
 
@@ -296,7 +296,7 @@ function Timeline() constructor {
 		for (var i = _position; i < array_length(_timeline); i++) {
 			// Add the index of the event to the batch
 			array_push(_batch, i);
-			_position = i;
+			_position++;
 			_runningEvents++;
 			
 			// Add a callback to the instance of this wave
@@ -414,7 +414,6 @@ function Timeline() constructor {
 	/// @return {Struct.Timeline}
 	once = function(callback, data = {}) {
 		array_push(_timeline, new Once(callback, data));
-		await();
 		
 		return self;
 	}

@@ -73,23 +73,40 @@ var sequence = new Sequence([secondWave, wave]);
 
 // sequence.start();
 
-var test = new Timeline()
+test = new Timeline()
+	.once(function(done) {
+		OLog.logString("Waiting for enter key to be pressed");
+		done();
+	})
 	.keyPress(vk_enter)
+	.once(function(done) {
+		OLog.logString("Delaying timeline for 2 seconds");
+		done();
+	})
 	.delay(2, updateTime)
+	.once(function(done) {
+		OLog.logString("Spawning some instances");
+		done();
+	})
 	.spawn(room_width / 2, room_height / 2, 1, 1, OMonster, SpawnMode.Destroy, {
 		direction: 90,
 	})
 	.await()
 	.once(function(done) {
+		OLog.logString("Waiting for all instances to be destroyed\nSetting timescale to 3, delaying timeline for 2 seconds");
 		global.timeScale = 3;
 		
 		done();
 	})
-	.delay(5, updateTime)
+	.delay(4, updateTime)
+	.once(function(done) {
+		OLog.logString("Starting a function that will scale up the timescale over time\nSpawning more instances, delaying timeline until they are all destroyed");
+		done();
+	})
 	.every(function(done, data) {
 		data.timer++;
 		
-		global.timeScale = data.timer / 100;
+		global.timeScale = data.timer / 50;
 		
 		if (data.timer == 200) {
 			done();
@@ -98,18 +115,20 @@ var test = new Timeline()
 	{
 		timer: 0
 	})
-	.spawn(room_width / 2, room_height / 2, 50, 1, OMonster, SpawnMode.Destroy, {
+	.spawn(room_width / 2, room_height / 2, 10, 1, OMonster, SpawnMode.Destroy, {
 		direction: 90,
 	})
 	.await()
 	.once(function(done) {
+		OLog.logString("Timeline finished");
 		global.timeScale = 1;
 		
 		done();
-	})
-	.await();
+	});
 
-test.start();
+setTimeout(function() {
+	test.start();
+}, 1);
 
 defaultFont = font_add("Viga-Regular.ttf", 20, false, false, 32, 128);
 countdownFont = font_add("Viga-Regular.ttf", 60, false, false, 32, 128);

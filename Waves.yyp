@@ -5,10 +5,10 @@
   "resources": [
     {"id":{"name":"OMonster","path":"objects/OMonster/OMonster.yy",},"order":1,},
     {"id":{"name":"TimeOuts","path":"scripts/TimeOuts/TimeOuts.yy",},"order":1,},
-    {"id":{"name":"OInput","path":"objects/OInput/OInput.yy",},"order":2,},
+    {"id":{"name":"OLog","path":"objects/OLog/OLog.yy",},"order":2,},
     {"id":{"name":"OWaveController","path":"objects/OWaveController/OWaveController.yy",},"order":0,},
     {"id":{"name":"Timeline","path":"scripts/Timeline/Timeline.yy",},"order":0,},
-    {"id":{"name":"RTowerDefense","path":"rooms/RTowerDefense/RTowerDefense.yy",},"order":0,},
+    {"id":{"name":"RMain","path":"rooms/RMain/RMain.yy",},"order":0,},
   ],
   "Options": [
     {"name":"Android","path":"options/android/options_android.yy",},
@@ -26,7 +26,7 @@
     "children": [],
   },
   "RoomOrderNodes": [
-    {"roomId":{"name":"RTowerDefense","path":"rooms/RTowerDefense/RTowerDefense.yy",},},
+    {"roomId":{"name":"RMain","path":"rooms/RMain/RMain.yy",},},
   ],
   "Folders": [
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Animation Curves","folderPath":"folders/Animation Curves.yy","order":12,},
