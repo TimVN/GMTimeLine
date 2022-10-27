@@ -1,6 +1,7 @@
 global.timeScale = 1;
 timeBeforeNextRound = 0;
 
+/// @param {Real} msLeft
 var updateTime = function(msLeft) {
 	timeBeforeNextRound = msLeft;
 }
@@ -46,6 +47,7 @@ wave = new Timeline()
 });*/
 
 var secondWave = new Timeline()
+	.keyPress(vk_enter)
 	.every(function(done) {
 		// This function is called every step until done() is called
 		// This allows you to run any logic you want before continuing
@@ -67,9 +69,19 @@ var secondWave = new Timeline()
 	.spawn(10, 10, 2, 0.2, OMonster, SpawnMode.Default)
 	.await();
 	
-var timeline = new Sequence([secondWave, wave]);
+var sequence = new Sequence([secondWave, wave]);
 
-timeline.start();
+// sequence.start();
+
+var test = new Timeline()
+	.keyPress(vk_enter)
+	.delay(2, updateTime)
+	.keyPress(vk_enter)
+	.delay(4, updateTime)
+	.keyPress(vk_enter)
+	.delay(2, updateTime);
+
+test.start();
 
 defaultFont = font_add("Viga-Regular.ttf", 20, false, false, 32, 128);
 countdownFont = font_add("Viga-Regular.ttf", 60, false, false, 32, 128);

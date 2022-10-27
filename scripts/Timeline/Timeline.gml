@@ -87,7 +87,7 @@ function Spawn(x, y, amount, interval, obj, mode, properties) : Base() construct
 
 function Await() : Base() constructor {
 	name = "Await";
-	type = "await";
+	type = "delay";
 	
 	function start() {
 		// This looks odd, but this event is simply used to indicate we
@@ -258,14 +258,16 @@ function Timeline() constructor {
 		_runningEvents = max(0, _runningEvents - 1);
 		
 		if (_runningEvents == 0) {
-			if (_position < array_length(_timeline) - 1) {
+			if (_position < array_length(_timeline)) {
 				start();
-			} else if (_onFinishCallback != undefined) {
+			} else {
 				show_debug_message("Timeline complete");
-				
-				_onFinishCallback({
-					duration: current_time - _startedAt,
-				});
+
+				if (_onFinishCallback != undefined) {
+					_onFinishCallback({
+						duration: current_time - _startedAt,
+					});
+				}
 			}
 		}
 	}
@@ -286,6 +288,8 @@ function Timeline() constructor {
 			_startedAt = current_time;
 		}
 		
+		show_debug_message("Position: " + string(_position));
+		
 		// Used to keep track of events that will be fired simultaneously
 		_batch = [];
 		
@@ -304,7 +308,7 @@ function Timeline() constructor {
 			show_debug_message("Starting " + _timeline[i].name + " event. Active events: " + string(_runningEvents));
 			
 			// If the current event is of type 'await' or 'delay', we break out of the loop
-			if (_timeline[i].type == "await" || _timeline[i].type == "delay") {
+			if (_timeline[i].type == "delay") {
 				// We also want to skip over this event in the next iteration
 				_position++;
 				
