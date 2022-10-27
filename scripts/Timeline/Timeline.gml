@@ -114,15 +114,17 @@ function Delay(seconds, callback) : Base() constructor {
 	}
 }
 
-function Once(callback) : Base() constructor {
+function Once(callback, data) : Base() constructor {
 	name = "Custom function";
 	type = "delay";
+	
 	_callback = callback;
+	_data = data;
 	
 	function start() {
 		_callback(function() {
 			finish(index);
-		});
+		}, _data);
 	}
 }
 
@@ -189,17 +191,19 @@ function KeyReleased(input, key) : Base() constructor {
 /// @function											Every(input, callback)
 /// @param		{Struct.Input}			input
 /// @param		{Function}					callback
-function Every(input, callback) : Base() constructor {
+/// @param		{Struct.Any}				data
+function Every(input, callback, data) : Base() constructor {
 	name = "Every";
 	type = "delay";
 	
 	_input = input;
 	_callback = callback;
+	_data = data;
 	
 	function start() {
 		_input.addWatcher(_callback, function() {
 			finish(index)
-		});
+		}, _data);
 	}
 }
 
@@ -207,9 +211,7 @@ function Every(input, callback) : Base() constructor {
 /// @description							Creates a new timeline
 /// @param										{Struct.Input}	input	Input listener to use for this timeline
 /// @return {Struct.Timeline}
-function Timeline(input = undefined) constructor {
-	_input = input;
-	
+function Timeline() constructor {
 	_timeline = [new Base()];
 	_batch = [];
 	_position = 0;
@@ -223,6 +225,18 @@ function Timeline(input = undefined) constructor {
 	
 	_startedAt = undefined;
 	_onFinishCallback = undefined;
+	
+	_input = new Input();
+	
+	function step() {
+		setTimeout(function() {
+			// This recursive function will run every step and is used to process input and custom functions
+			_input.step();
+			step();
+		}, 1);
+	}
+
+	step();
 	
 	onEventFinished = function(index) {
 		var _inBatch = false;
@@ -344,17 +358,6 @@ function Timeline(input = undefined) constructor {
 		return self;
 	}
 	
-	/// @function                once(callback)
-	/// @description             Allows for a custom function to be called in between events, 
-	/// the function gets called back a callback function that can be called to proceed with the timeline
-	/// @param {Function}				 callback The function to be called back
-	/// @return {Struct.Timeline}
-	once = function(callback) {
-		array_push(_timeline, new Once(callback));
-		
-		return self;
-	}
-	
 	/// @function                limit(seconds)
 	/// @description             Sets a time limit in seconds for a batch of events to finish
 	/// @param {Real}						 seconds The limit in seconds
@@ -389,9 +392,22 @@ function Timeline(input = undefined) constructor {
 	/// @description											Allows for a function to be run every step
 	/// @param {Function}					func		Function to run every step - will be passed a function
 	/// to indicate that the function is done and the timeline can proceed
+	/// @param {Struct.Any}								data Data to be passed to the callback function
 	/// @return {Struct.Timeline}
-	every = function(func) {
-		array_push(_timeline, new Every(_input, func));
+	every = function(func, data = {}) {
+		array_push(_timeline, new Every(_input, func, data));
+		
+		return self;
+	}
+	
+	/// @function									once(callback)
+	/// @description							Allows for a custom function to be called in between events, 
+	/// the function gets called	back a callback function that can be called to proceed with the timeline
+	/// @param {Function}					callback The function to be called back
+	/// @param {Struct.Any}				data Data to be passed to the callback function
+	/// @return {Struct.Timeline}
+	once = function(callback, data = {}) {
+		array_push(_timeline, new Once(callback, data));
 		
 		return self;
 	}
@@ -435,7 +451,7 @@ function Sequence(timelines) constructor {
 function Input() constructor {
 	static _keyPressedListeners = [];
 	static _keyReleasedListeners = [];
-	static _watchers = [];
+	static _functions = [];
 	
 	static step = function() {
 		var _keyPressedBatch = [];
@@ -453,21 +469,31 @@ function Input() constructor {
 			}
 		}
 		
-		for (var i = 0; i < array_length(_keyPressedBatch); i++) {
+		// We're looping through the batches in reverse order cause we're deleting items from it
+		// If we were to start at index 0, we'd shift the position of items to be deleted 
+		for (var i = array_length(_keyPressedBatch) - 1; i >= 0; i--) {
 			_keyPressedListeners[_keyPressedBatch[i]].callback();
+			array_delete(_keyPressedListeners, _keyPressedBatch[i], 1);
 		}
 		
-		for (var i = 0; i < array_length(_keyReleasedBatch); i++) {
+		for (var i = array_length(_keyReleasedBatch) - 1; i >= 0; i--) {
 			_keyReleasedListeners[_keyReleasedBatch[i]].callback();
+			array_delete(_keyReleasedListeners, _keyPressedBatch[i], 1);
 		}
 		
-		for (var i = 0; i < array_length(_watchers); i++) {
-			_watchers[i].func(_watchers[i].done);
+		for (var i = array_length(_functions) - 1; i >= 0; i--) {
+			_i = i;
+			_functions[i].func(function() {
+				// We're wrapping it because we need to know when it's called
+				// in order to remove it from the _functions array
+				_functions[_i].done();
+				array_delete(_functions, _i, 1);
+			}, _functions[i].data);
 		}
 	}
 	
-	static addWatcher = function(func, done) {
-		array_push(_watchers, { func: func, done: done });
+	static addWatcher = function(func, done, data) {
+		array_push(_functions, { func: func, done: done, data: data });
 	}
 	
 	static addKeyUpListener = function(key, callback) {

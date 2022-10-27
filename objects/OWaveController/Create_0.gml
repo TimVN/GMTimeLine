@@ -1,13 +1,11 @@
 global.timeScale = 1;
 timeBeforeNextRound = 0;
 
-input = new Input();
-
 var updateTime = function(msLeft) {
 	timeBeforeNextRound = msLeft;
 }
 
-wave = new Timeline(input)
+wave = new Timeline()
 	.keyPress(vk_enter)
 	.delay(5, updateTime)
 	.delay(5, updateTime)
@@ -47,15 +45,22 @@ wave = new Timeline(input)
 	show_debug_message("The timeline took " + string(seconds) + " seconds to complete");
 });*/
 
-var secondWave = new Timeline(input)
+var secondWave = new Timeline()
 	.every(function(done) {
+		// This function is called every step until done() is called
+		// This allows you to run any logic you want before continuing
+		// The done function can also be passed to other instances for example
 		if (keyboard_check_pressed(vk_shift)) {
 			done();
 		}
 	})
-	.once(function(done) {
-		show_debug_message("Custom function");
-		done();
+	.once(function(done, data) {
+		if (data.test) {
+			done();
+		}
+	},
+	{
+		test: true
 	})
 	// .keyPress(vk_enter)
 	// .keyReleased(vk_enter)
