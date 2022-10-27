@@ -116,7 +116,7 @@ function Delay(seconds, callback) : Base() constructor {
 
 function Once(callback, data) : Base() constructor {
 	name = "Custom function";
-	type = "delay";
+	type = "function";
 	
 	_callback = callback;
 	_data = data;
@@ -194,7 +194,7 @@ function KeyReleased(input, key) : Base() constructor {
 /// @param		{Struct.Any}				data
 function Every(input, callback, data) : Base() constructor {
 	name = "Every";
-	type = "delay";
+	type = "function";
 	
 	_input = input;
 	_callback = callback;
@@ -315,6 +315,8 @@ function Timeline() constructor {
 				break;
 			}
 		}
+		
+		show_debug_message(_batch);
 		
 		show_debug_message("_________________________________________________________________________________");
 		for (var i = 0; i < array_length(_batch); i++) {

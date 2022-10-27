@@ -76,12 +76,49 @@ var sequence = new Sequence([secondWave, wave]);
 var test = new Timeline()
 	.keyPress(vk_enter)
 	.delay(2, updateTime)
-	.keyPress(vk_enter)
-	.delay(4, updateTime)
-	.keyPress(vk_enter)
-	.delay(2, updateTime);
+	.spawn(room_width / 2, room_height / 2, 1, 1, OMonster, SpawnMode.Destroy, {
+		direction: 90,
+	})
+	.await()
+	.once(function(done) {
+		global.timeScale = 3;
+		
+		done();
+	})
+	.await()
+	.delay(1, updateTime)
+	.every(function(done, data) {
+		data.timer++;
+		
+		global.timeScale = data.timer / 100;
+		
+		if (data.timer == 200) {
+			done();
+		}
+	}, {
+		timer: 0
+	})
+	.spawn(room_width / 2, room_height / 2, 50, 1, OMonster, SpawnMode.Destroy, {
+		direction: 90,
+	})
+	.await()
+	.once(function(done) {
+		global.timeScale = 1;
+		
+		done();
+	})
+	.await();
 
 test.start();
 
 defaultFont = font_add("Viga-Regular.ttf", 20, false, false, 32, 128);
 countdownFont = font_add("Viga-Regular.ttf", 60, false, false, 32, 128);
+
+function Test(nr) constructor {
+	_nr = nr;
+}
+
+var t1 = new Test(10);
+var t2 = new Test(20);
+
+show_debug_message(t1._nr);
