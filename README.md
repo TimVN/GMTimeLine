@@ -259,6 +259,17 @@ Will instantiate objects at the specified interval
 | mode       | <code>WaitingMode</code> | Waiting mode                         |
 | properties | <code>Struct</code>      | Properties to apply to each instance |
 
+`WaitingMode` is an enum with the following values:
+
+`Default` - Will simply create the instances and consider the event finished
+
+`Destroy` - Will consider the event finished when all instances are destroyed
+
+**Attention!**
+
+If you want to use the `Destroy` mode, you must call `destroy(id)` on your instances to signal the timeline that they are destroyed. 
+The function will destroy the instance.
+
 <a name="every"></a>
 
 ## every(func, data) ⇒ <code>Struct.Timeline</code>
