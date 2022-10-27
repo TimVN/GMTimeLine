@@ -112,6 +112,26 @@ setTimeout(function() {
 }, 1);
 ```
 
+# Documentation
+
+## Classes
+
+<a name="Timeline"></a>
+
+### Timeline() ⇒ <code>Struct.Timeline</code>
+
+Creates a new timeline
+
+<a name="Timeline"></a>
+
+### Sequence(timelines) ⇒ <code>Struct.Sequence</code>
+
+Creates a new sequence of timelines
+
+| Param     | Type                                | Description           |
+| --------- | ----------------------------------- | --------------------- |
+| timelines | <code>Array<Struct.Timeline></code> | An array of timelines |
+
 ## Timeline Functions
 
 <dl>
@@ -170,7 +190,6 @@ setTimeout(function() {
 
 Creates a new timeline
 
-**Kind**: global function  
 <a name="start"></a>
 
 ## start() ⇒ <code>Struct.Timeline</code>
