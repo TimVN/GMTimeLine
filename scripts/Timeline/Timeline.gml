@@ -349,6 +349,7 @@ function Timeline() constructor {
 	  * @param {Real}							mode The waiting mode
 	  * @param {Struct}						properties Properties to be applied to the instantiated objects
 	  * @return {Struct.Timeline}
+		*/
 	instantiate = function(x, y, amount, interval, obj, mode = WaitingMode.Default, properties = {}) {
 		array_push(_timeline, new Instantiate(x, y, amount, interval, obj, mode, properties));
 		
@@ -440,7 +441,9 @@ function Timeline() constructor {
 		
 	}
 	
-	// Allows you to listen to when this timeline ends
+	/** @function	onFinish(callback)
+	  * @param {Function}	callback Function to be called when timeline finishes
+		*/
 	onFinish = function(callback) {
 		_onFinishCallback = callback;
 	}
