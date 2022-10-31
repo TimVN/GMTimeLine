@@ -1,4 +1,4 @@
-doTimedFunctions();
+processTimeouts();
 
 if (keyboard_check_pressed(ord("P"))) {
 	if (global.timeScale > 0) {

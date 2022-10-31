@@ -1,32 +1,39 @@
-global.timedFunctions = ds_list_create();
+global.Timeouts = [];
 
-function TimedFunction(_func, _timeout, _progress) constructor {
-    func = _func;
-    timer = _timeout;
-		progress = _progress;
+function Timeout(func, timeout, progress) constructor {
+    _func = func;
+    _timer = timeout;
+		_progress = progress;
 }
 
-/// @param func
-/// @param timeout
+/** @param {Function} func
+  * @param {Real} timeout
+	* @param {Function} onProgress
+	*/
 function setTimeout(func, timeout, onProgress = undefined) {
-    var timedFunc = new TimedFunction(func, timeout, onProgress);
-    ds_list_add(global.timedFunctions, timedFunc);
+    var timedFunc = new Timeout(func, timeout, onProgress);
+    array_push(global.Timeouts, timedFunc);
+
     return timedFunc;
 }
 
-function doTimedFunctions() {
-    var funcs = global.timedFunctions;
-    for (var i = ds_list_size(funcs) - 1; i >= 0; i--) {
-        var func = funcs[| i];
-        if (func.timer > 0)  {
-            func.timer -= (1 * global.timeScale);
-						if (func.progress != undefined) {
-							func.progress(func.timer);
+function processTimeouts() {
+    var funcs = global.Timeouts;
+
+    for (var i = array_length(funcs) - 1; i >= 0; i--) {
+        var func = funcs[i];
+
+        if (func._timer > 0)  {
+            func._timer -= (1 * global.timeScale);
+
+						if (func._progress != undefined) {
+							func._progress(func._timer);
 						}
-            if (func.timer <= 0) {
-                func.func();
+
+            if (func._timer <= 0) {
+                func._func();
                 delete func;
-                ds_list_delete(funcs, i);
+                array_delete(funcs, i, 1);
             }
         }
     }
