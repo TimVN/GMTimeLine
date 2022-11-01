@@ -28,7 +28,6 @@ function Instantiate(x, y, amount, interval, obj, mode, properties) : Base() con
 	_properties = properties;
 
 	_position = 0;
-	_instanceCount = 0;
 	_batch = [];
 	
 	function onDestroy(instanceId) {
@@ -36,9 +35,10 @@ function Instantiate(x, y, amount, interval, obj, mode, properties) : Base() con
 		
 		var isFound = false;
 		
-		for (var i = 0; i < array_length(_batch); i++) {
+		for (var i = array_length(_batch) - 1; i >= 0; i--) {
 			if (_batch[i] == instanceId) {
 				isFound = true;
+				array_delete(_batch, i, 1);
 			}
 		}
 		
@@ -46,14 +46,12 @@ function Instantiate(x, y, amount, interval, obj, mode, properties) : Base() con
 			return;
 		}
 		
-		_instanceCount--;
-		
 		// If there's no more instances in this group and the mode is set to 'Destroy'
 		// We call the "finish" function. This will continue the timeline of events
-		if (_instanceCount == 0 && _mode == WaitingMode.Destroy) {
+		if ( array_length(_batch) == 0 && _mode == WaitingMode.Destroy) {
 			finish(index);
 			
-			release();
+			reset();
 		}
 	}
 	
@@ -62,11 +60,11 @@ function Instantiate(x, y, amount, interval, obj, mode, properties) : Base() con
 		
 		var instance = instance_create_layer(_x, _y, "Instances", _obj);
 		
+		array_push(_batch, instance);
+		
 		// Pass the onDestroy function. Use it to destroy instances
 		// Do not use instance_destroy. Simply call destroy(id)
 		instance.destroy = onDestroy;
-		
-		_instanceCount++;
 		
 		// The 'properties' argument takes a struct with any property you want
 		// This includes built-ins (direction, speed, etc.)
@@ -84,7 +82,7 @@ function Instantiate(x, y, amount, interval, obj, mode, properties) : Base() con
 			if (_mode == WaitingMode.Default) {
 				finish(index);
 				
-				release();
+				reset();
 			}
 			
 			return;
@@ -96,9 +94,9 @@ function Instantiate(x, y, amount, interval, obj, mode, properties) : Base() con
 		}, _interval * game_get_speed(gamespeed_fps));
 	}
 	
-	function release() {
+	// Resets the event
+	function reset() {
 		_position = 0;
-		_instanceCount = 0;
 		_batch = [];
 	}
 }
@@ -115,17 +113,18 @@ function Await() : Base() constructor {
 	}
 }
 
-function Delay(seconds, callback) : Base() constructor {
+function Delay(seconds, timeline, callback) : Base() constructor {
 	name = "Delay";
 	type = "delay";
 	
 	_delay = seconds * game_get_speed(gamespeed_fps);
+	_timeline = timeline;
 	_callback = callback;
 	
 	function start() {
 		setTimeout(function() {
 			finish(index);
-		}, _delay, _callback);
+		}, _delay, _timeline, _callback);
 	}
 }
 
@@ -246,11 +245,21 @@ function Restart(timeline) : Base() constructor {
 	_timeline = timeline;
 	
 	function start() {
-		_timeline._position = 0;
-		_timeline._runningEvents = 0;
+		_timeline.reset();
 		_timeline.process = true;
 		
 		finish(index);
+	}
+}
+
+function Reset(timeline) : Base() constructor {
+	name = "Reset";
+	type = "delay";
+	
+	_timeline = timeline;
+	
+	function start() {
+		_timeline.reset();
 	}
 }
 
@@ -322,14 +331,6 @@ function Timeline() constructor {
 				}
 			}
 		}
-	}
-	
-	// todo: Fix this function, clear all running events
-	reset = function() {
-		_position = 0;
-		_batch = [];
-		_runningEvents = 0;
-		ds_list_clear(global.timed_functions);
 	}
 	
 	/** @function                start()
@@ -414,7 +415,7 @@ function Timeline() constructor {
 		* @return {Struct.Timeline}
 		*/
 	delay = function(seconds, onProgress = undefined) {
-		array_push(_timeline, new Delay(seconds, onProgress));
+		array_push(_timeline, new Delay(seconds, self, onProgress));
 		
 		return self;
 	}
@@ -498,11 +499,20 @@ function Timeline() constructor {
 		_onFinishCallback = callback;
 	}
 	
-	/** @function release()
-	  * @description Stops the timeline from further processing any input/functions
+	/** @function reset()
+	  * @description Resets the timeline
 		*/
-	release = function() {
+	reset = function() {
+		_position = 0;
+		_runningEvents = 0;
 		_process = false;
+		
+		// Other events might have to clear some data
+		for (var i = 0; i < array_length(_timeline); i++) {
+			if (variable_struct_exists(_timeline[i], "reset")) {
+				_timeline[i].reset();
+			}
+		}
 	}
 }
 

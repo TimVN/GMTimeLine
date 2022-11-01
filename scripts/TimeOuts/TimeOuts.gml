@@ -1,17 +1,19 @@
 global.Timeouts = [];
 
-function Timeout(func, timeout, progress) constructor {
+function Timeout(func, timeout, timeline, progress) constructor {
     _func = func;
     _timer = timeout;
+		_timeline = timeline;
 		_progress = progress;
 }
 
 /** @param {Function} func
   * @param {Real} timeout
+  * @param {Struct.Timeline} timeline
 	* @param {Function} onProgress
 	*/
-function setTimeout(func, timeout, onProgress = undefined) {
-    var timedFunc = new Timeout(func, timeout, onProgress);
+function setTimeout(func, timeout, timeline = undefined, onProgress = undefined) {
+    var timedFunc = new Timeout(func, timeout, timeline, onProgress);
     array_push(global.Timeouts, timedFunc);
 
     return timedFunc;

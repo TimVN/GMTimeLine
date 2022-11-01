@@ -12,11 +12,11 @@ var updateTime = function(msLeft) {
 
 timeline = new Timeline()
 	.once(function(done) {
-		OLog.logString("Press enter to start");
+		// OLog.logString("Press enter to start");
 		
 		done();
 	})
-	.keyPress(vk_enter) // Wait till the Enter key is pressed
+	// .keyPress(vk_enter) // Wait till the Enter key is pressed
 	.delay(2, updateTime) // Wait 2 seconds, pass time passed to updateTime function
 	// Instantiate 5 instances of OMonster in intervals of 1 second, wait for the instances to be destroyed
 	// before considering the event to be finished
@@ -26,7 +26,7 @@ timeline = new Timeline()
 		attack: 10,
 	})
 	// Limit the preceeding events to 4 seconds max, after that we're progressing as if they finished
-	.limit(4)
+	.limit(2)
 	.await() // Wait for the previous event to finish
 	.delay(2, updateTime) // Wait for 2 seconds
 	.instantiate(room_width / 2, 500, 10, 0.5, OMonster, WaitingMode.Destroy, {
@@ -36,8 +36,6 @@ timeline = new Timeline()
 	// Run custom logic once
 	.once(function(done, data) {
 		show_debug_message(data.foo);
-		
-		global.timeScale = 5;
 		
 		done();
 	}, {
@@ -57,6 +55,8 @@ timeline = new Timeline()
 		
 		// Stop after 5 seconds (given that timeScale = 1)
 		if (seconds == 5) {
+			global.timeScale++;
+			
 			done();
 		}
 	}, {
