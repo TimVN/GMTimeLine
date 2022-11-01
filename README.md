@@ -102,14 +102,12 @@ sequence = new Sequence([
 ]);
 
 sequence.onFinish(function(data) {
-  OLog.logString(
+  show_debug_message(
     "Sequence complete in " + string(data.duration / 1000) + " seconds"
   );
 });
 
-setTimeout(function() {
-  sequence.start();
-}, 1);
+sequence.start();
 ```
 
 # Documentation
@@ -131,6 +129,10 @@ Creates a new sequence of timelines
 | Param     | Type                                | Description           |
 | --------- | ----------------------------------- | --------------------- |
 | timelines | <code>Array<Struct.Timeline></code> | An array of timelines |
+
+## Timescale
+
+Timelines take `global.timeScale` into account. 1 is normal speed, 0.5 is half speed, 2 is double speed, etc.
 
 ## Timeline Functions
 

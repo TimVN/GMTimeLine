@@ -11,6 +11,11 @@ var updateTime = function(msLeft) {
 }
 
 timeline = new Timeline()
+	.once(function(done) {
+		OLog.logString("Press enter to start");
+		
+		done();
+	})
 	.keyPress(vk_enter) // Wait till the Enter key is pressed
 	.delay(2, updateTime) // Wait 2 seconds, pass time passed to updateTime function
 	// Instantiate 5 instances of OMonster in intervals of 1 second, wait for the instances to be destroyed
@@ -57,14 +62,17 @@ timeline = new Timeline()
 	}, {
 		seconds: 0
 	})
-	.await(); // Wait for the previous event to finish
+	.await() // Wait for the previous event to finish
+	.restart();
 	
 timeline.onFinish(function() {
 	// Timeline is finished, stop processing any logic left behind by "every"
 	timeline.release();
 });
-	
-// timeline.start();
+
+setTimeout(function() {
+	timeline.start();
+}, 1);
 
 sequence = new Sequence([
 	new Timeline()
@@ -105,4 +113,4 @@ var repeatingTimeline = new Timeline()
 	.keyPress(vk_enter)
 	.restart();
 	
-repeatingTimeline.start();
+// repeatingTimeline.start();

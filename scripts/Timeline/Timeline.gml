@@ -29,9 +29,22 @@ function Instantiate(x, y, amount, interval, obj, mode, properties) : Base() con
 
 	_position = 0;
 	_instanceCount = 0;
+	_batch = [];
 	
 	function onDestroy(instanceId) {
 		instance_destroy(instanceId);
+		
+		var isFound = false;
+		
+		for (var i = 0; i < array_length(_batch); i++) {
+			if (_batch[i] == instanceId) {
+				isFound = true;
+			}
+		}
+		
+		if (!isFound) {
+			return;
+		}
 		
 		_instanceCount--;
 		
@@ -39,6 +52,8 @@ function Instantiate(x, y, amount, interval, obj, mode, properties) : Base() con
 		// We call the "finish" function. This will continue the timeline of events
 		if (_instanceCount == 0 && _mode == WaitingMode.Destroy) {
 			finish(index);
+			
+			release();
 		}
 	}
 	
@@ -64,11 +79,12 @@ function Instantiate(x, y, amount, interval, obj, mode, properties) : Base() con
 		}
 		
 		// If all instances were spawned
-		if (_position == _amount) {
+		if (_position == _amount) {			
 			// If the Default mode is used, this event is considered finished after spawning all of them
 			if (_mode == WaitingMode.Default) {
-				// Feather disable once GM1013
 				finish(index);
+				
+				release();
 			}
 			
 			return;
@@ -79,6 +95,12 @@ function Instantiate(x, y, amount, interval, obj, mode, properties) : Base() con
 			start();
 		}, _interval * game_get_speed(gamespeed_fps));
 	}
+	
+	function release() {
+		_position = 0;
+		_instanceCount = 0;
+		_batch = [];
+	}
 }
 
 function Await() : Base() constructor {
@@ -88,7 +110,6 @@ function Await() : Base() constructor {
 	function start() {
 		// This looks odd, but this event is simply used to indicate we
 		// want the system to wait for the current batch of events to end
-		show_debug_message("Waiting for active events to complete");
 		
 		finish(index);
 	}
@@ -102,8 +123,6 @@ function Delay(seconds, callback) : Base() constructor {
 	_callback = callback;
 	
 	function start() {
-		show_debug_message("Delaying timeline for " + string(_delay / game_get_speed(gamespeed_fps)) + " seconds");
-		
 		setTimeout(function() {
 			finish(index);
 		}, _delay, _callback);
@@ -186,6 +205,20 @@ function Once(callback, data) : Base() constructor {
 	}
 }
 
+function copyStruct(struct) {
+	var copy = {};
+	var keys = variable_struct_get_names(struct);
+		
+	for (var i = array_length(keys)-1; i >= 0; --i) {
+		var key = keys[i];
+		var value = struct[$ key];
+
+		variable_struct_set(copy, key, value)
+	}
+
+	return copy;
+}
+
 /** @function											Every(input, callback)
   * @param		{Struct.Input}			input
   * @param		{Function}					callback
@@ -196,13 +229,13 @@ function Every(input, callback, data) : Base() constructor {
 	type = "function";
 	
 	_input = input;
-	_callback = callback;
+	_callback = callback
 	_data = data;
 	
 	function start() {
-		_input.addWatcher(_callback, function() {
+		_input.addFunction(_callback, function() {
 			finish(index)
-		}, _data);
+		}, copyStruct(_data));
 	}
 }
 
@@ -214,6 +247,8 @@ function Restart(timeline) : Base() constructor {
 	
 	function start() {
 		_timeline._position = 0;
+		_timeline._runningEvents = 0;
+		_timeline.process = true;
 		
 		finish(index);
 	}
@@ -280,8 +315,6 @@ function Timeline() constructor {
 			if (_position < array_length(_timeline)) {
 				start();
 			} else {
-				show_debug_message("Timeline complete");
-
 				if (_onFinishCallback != undefined) {
 					_onFinishCallback({
 						duration: current_time - _startedAt,
@@ -325,8 +358,6 @@ function Timeline() constructor {
 				onEventFinished(index);
 			};
 			
-			show_debug_message("Starting " + _timeline[i].name + " event. Active events: " + string(_runningEvents));
-			
 			// If the current event is of type 'await' or 'delay', we break out of the loop
 			if (_timeline[i].type == "delay") {
 				// We also want to skip over this event in the next iteration
@@ -340,9 +371,6 @@ function Timeline() constructor {
 			}
 		}
 		
-		show_debug_message(_batch);
-		
-		show_debug_message("_________________________________________________________________________________");
 		for (var i = 0; i < array_length(_batch); i++) {
 			// show_debug_message("Starting timeline item " + string(batch[i])  + " (" + string(_timeline[batch[i]].name) + ")");
 			// We pass a reference to the timeline and the current batch of events
@@ -572,7 +600,7 @@ function Input() constructor {
 		}
 	}
 	
-	static addWatcher = function(func, done, data) {
+	static addFunction = function(func, done, data) {
 		data._startTime = current_time;
 		array_push(_functions, { func: func, done: done, data: data });
 	}
