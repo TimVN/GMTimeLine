@@ -91,5 +91,18 @@ sequence.onFinish(function(data) {
 });
 
 setTimeout(function() {
-	sequence.start();
+	// sequence.start();
 }, 1);
+
+// This timeline will restart after it's done
+var repeatingTimeline = new Timeline()
+	.delay(2, updateTime)
+	.once(function(done) {
+		OLog.logString("[" +  string(current_minute) + ":" + string(current_second) + "] Press enter to repeat timeline");
+		
+		done();
+	})
+	.keyPress(vk_enter)
+	.restart();
+	
+repeatingTimeline.start();

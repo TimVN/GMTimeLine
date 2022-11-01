@@ -206,6 +206,19 @@ function Every(input, callback, data) : Base() constructor {
 	}
 }
 
+function Restart(timeline) : Base() constructor {
+	name = "Restart";
+	type = "delay";
+	
+	_timeline = timeline;
+	
+	function start() {
+		_timeline._position = 0;
+		
+		finish(index);
+	}
+}
+
 /** @function									Timeline()
   * @description							Creates a new timeline
   * @param										{Struct.Input}	input	Input listener to use for this timeline
@@ -439,6 +452,15 @@ function Timeline() constructor {
 	
 	store = function() {
 		
+	}
+	
+	/** @function restart()
+	  * @description Restarts the timeline
+		*/
+	restart = function() {
+		array_push(_timeline, new Restart(self));
+		
+		return self;
 	}
 	
 	/** @function	onFinish(callback)
