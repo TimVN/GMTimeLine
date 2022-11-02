@@ -16,7 +16,7 @@ enum WaitingMode {
 	Destroy,
 }
 
-function Instantiate(x, y, amount, interval, obj, mode, properties) : Base() constructor {
+function Instantiate(x, y, amount, interval, obj, mode, properties, callback) : Base() constructor {
 	name = "Instantiate";
 	type = "function";
 	_x = x;
@@ -26,6 +26,7 @@ function Instantiate(x, y, amount, interval, obj, mode, properties) : Base() con
 	_obj = obj;
 	_mode = mode;
 	_properties = properties;
+	_callback = callback;
 
 	_position = 0;
 	_batch = [];
@@ -84,7 +85,11 @@ function Instantiate(x, y, amount, interval, obj, mode, properties) : Base() con
 		}
 		
 		// If all instances were spawned
-		if (_position == _amount) {			
+		if (_position == _amount) {
+			if (_callback != undefined) {
+				_callback(_batch);
+			}
+			
 			// If the Default mode is used, this event is considered finished after spawning all of them
 			if (_mode == WaitingMode.Default) {
 				finish(index);
@@ -385,7 +390,6 @@ function Timeline() constructor {
 		}
 		
 		for (var i = 0; i < array_length(_batch); i++) {
-			// show_debug_message("Starting timeline item " + string(batch[i])  + " (" + string(_timeline[batch[i]].name) + ")");
 			// We pass a reference to the timeline and the current batch of events
 			_timeline[_batch[i]].start(self, _batch);
 		}
@@ -420,10 +424,11 @@ function Timeline() constructor {
 	  * @param {Asset.GMObject}		obj The object to be instantiated
 	  * @param {Real}							mode The waiting mode
 	  * @param {Struct}						properties Properties to be applied to the instantiated objects
+	  * @param {Function}					callback Callback to be called when all instances are instantiated
 	  * @return {Struct.Timeline}
 		*/
-	instantiate = function(x, y, amount, interval, obj, mode = WaitingMode.Default, properties = {}) {
-		array_push(_timeline, new Instantiate(x, y, amount, interval, obj, mode, properties));
+	instantiate = function(x, y, amount, interval, obj, mode = WaitingMode.Default, properties = {}, callback = undefined) {
+		array_push(_timeline, new Instantiate(x, y, amount, interval, obj, mode, properties, callback));
 		
 		return self;
 	}
@@ -505,48 +510,6 @@ function Timeline() constructor {
 		*/
 	once = function(callback, data = {}) {
 		array_push(_timeline, new Once(callback, data));
-		
-		return self;
-	}
-	
-	move = function(instanceId, xTo, yTo, spd, includeTimescale) {		
-		array_push(_timeline, new Every(_input, function(done, data) {
-			// show_debug_message(array_length(_input._functions));
-			
-			with (data.instanceId) {
-				var spd = data.scale ? data.spd * global.timeScale : data.spd;
-
-		    // Calculate direction towards player
-		    var toX = data.xTo - x;
-		    var toY = data.yTo - y;
-				
-				// show_debug_message(string(data.xTo) + ":" + string(data.yTo));
-
-		    // Normalize
-		    var toPlayerLength = sqrt(toX * toX + toY * toY);
-		    toX = toX / toPlayerLength;
-		    toY = toY / toPlayerLength;
-
-		    // Move towards the player
-		    x += min(point_distance(x, y, data.xTo, data.yTo), toX * spd);
-		    y += min(point_distance(x, y, data.xTo, data.yTo), toY * spd);
-					
-				// move_towards_point(data.xTo, data.yTo, min(point_distance(x, y, data.xTo, data.yTo), spd));
-			
-				if (point_distance(x, y, data.xTo, data.yTo) == 0) {
-					x = data.xTo;
-					y = data.yTo;
-					
-					done();	
-				}
-			}
-		}, {
-			instanceId: instanceId,
-			xTo: xTo,
-			yTo: yTo,
-			spd: spd,
-			scale: includeTimescale
-		}));
 		
 		return self;
 	}

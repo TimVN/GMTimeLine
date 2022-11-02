@@ -10,7 +10,7 @@ GMTimeline allows you to create timelines by simply chaining events, like so:
 timer = 0;
 
 /// @param {Real} msLeft
-var updateTime = function(msLeft) {
+var updateTime = function (msLeft) {
   timer = msLeft;
 };
 
@@ -20,28 +20,28 @@ timeline = new Timeline()
   // Instantiate 5 instances of OMonster in intervals of 1 second, wait for the instances to be destroyed
   // before considering the event to be finished
   .instantiate(room_width / 2, 500, 5, 1, OMonster, WaitingMode.Destroy, {
-    direction: 0 // Pass properties that will be applied to the instances
+    direction: 0, // Pass properties that will be applied to the instances
   })
   .await() // Wait for the previous event to finish
   .delay(2, updateTime) // Wait for 2 seconds
   .instantiate(room_width / 2, 500, 10, 0.5, OMonster, WaitingMode.Destroy, {
-    direction: 180
+    direction: 180,
   })
   .await()
   // Run custom logic once
   .once(
-    function(done, data) {
+    function (done, data) {
       show_debug_message(data.foo);
 
       done();
     },
     {
-      foo: "bar"
+      foo: "bar",
     }
   )
   // Run custom logic every step, until done() is called or timeline is released
   .every(
-    function(done, data) {
+    function (done, data) {
       var seconds = floor(data._secondsPassed);
 
       // Every second
@@ -63,12 +63,12 @@ timeline = new Timeline()
       }
     },
     {
-      seconds: 0
+      seconds: 0,
     }
   )
   .await(); // Wait for the previous event to finish
 
-timeline.onFinish(function() {
+timeline.onFinish(function () {
   // Timeline is finished, stop processing any logic left behind by "every"
   timeline.release();
 });
@@ -81,7 +81,7 @@ Or how about a sequence of timelines:
 ```javascript
 sequence = new Sequence([
   new Timeline()
-    .once(function(done) {
+    .once(function (done) {
       OLog.logString("Starting a sequence of timelines");
 
       done();
@@ -90,7 +90,7 @@ sequence = new Sequence([
     .await(),
 
   new Timeline()
-    .once(function(done) {
+    .once(function (done) {
       OLog.logString(
         "First timeline in sequence finished, second timeline started"
       );
@@ -98,10 +98,10 @@ sequence = new Sequence([
       done();
     })
     .delay(3, updateTime)
-    .await()
+    .await(),
 ]);
 
-sequence.onFinish(function(data) {
+sequence.onFinish(function (data) {
   show_debug_message(
     "Sequence complete in " + string(data.duration / 1000) + " seconds"
   );
@@ -247,19 +247,20 @@ Waits for a key to be released
 
 <a name="instantiate"></a>
 
-## instantiate(x, y, amount, interval, obj, mode, properties) ⇒ <code>Struct.Timeline</code>
+## instantiate(x, y, amount, interval, obj, mode, properties, callback) ⇒ <code>Struct.Timeline</code>
 
 Will instantiate objects at the specified interval
 
-| Param      | Type                     | Description                          |
-| ---------- | ------------------------ | ------------------------------------ |
-| x          | <code>Real</code>        | x coordinate to spawn instance at    |
-| y          | <code>Real</code>        | y coordinate to spawn instance at    |
-| amount     | <code>Real</code>        | Amount of instances to spawn         |
-| interval   | <code>Real</code>        | Interval between each instance       |
-| obj        | <code>Object</code>      | Object to instantiate                |
-| mode       | <code>WaitingMode</code> | Waiting mode                         |
-| properties | <code>Struct</code>      | Properties to apply to each instance |
+| Param      | Type                     | Description                                               |
+| ---------- | ------------------------ | --------------------------------------------------------- |
+| x          | <code>Real</code>        | x coordinate to spawn instance at                         |
+| y          | <code>Real</code>        | y coordinate to spawn instance at                         |
+| amount     | <code>Real</code>        | Amount of instances to spawn                              |
+| interval   | <code>Real</code>        | Interval between each instance                            |
+| obj        | <code>Object</code>      | Object to instantiate                                     |
+| mode       | <code>WaitingMode</code> | Waiting mode                                              |
+| properties | <code>Struct</code>      | Properties to apply to each instance                      |
+| callback   | <code>Function</code>    | Callback to be called when all instances are instantiated |
 
 `WaitingMode` is an enum with the following values:
 
@@ -269,7 +270,7 @@ Will instantiate objects at the specified interval
 
 **Attention!**
 
-If you want to use the `Destroy` mode, you must call `destroy(id)` on your instances to signal the timeline that they are destroyed. 
+If you want to use the `Destroy` mode, you must call `destroy(id)` on your instances to signal the timeline that they are destroyed.
 The function will destroy the instance.
 
 <a name="every"></a>

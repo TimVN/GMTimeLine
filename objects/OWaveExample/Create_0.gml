@@ -9,7 +9,10 @@ updateCounter = function(ms) {
 var waves = new Sequence([
 	new Timeline()
 		.delay(5, updateCounter)
-		.instantiate(200, 200, 10, 1, OMonster, WaitingMode.Destroy)
+		.instantiate(200, 200, 10, 1, OMonster, WaitingMode.Destroy, {}, function(instances) {
+			// Instances will contain an array of instance ID's
+			show_debug_message(instances);
+		})
 		.await()
 		.instantiate(200, 200, 10, 0.5, OMonster, WaitingMode.Destroy)
 		.instantiate(200, 300, 10, 0.5, OMonster, WaitingMode.Destroy)
