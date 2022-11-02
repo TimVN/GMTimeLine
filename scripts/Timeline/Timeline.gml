@@ -363,8 +363,6 @@ function Timeline() constructor {
 				onEventFinished(index);
 			};
 			
-			show_debug_message(string(i) + ": " + _timeline[i].type);
-			
 			// If the current event is of type 'await' or 'delay', we break out of the loop
 			if (_timeline[i].type == "delay") {
 				// We also want to skip over this event in the next iteration
