@@ -170,7 +170,6 @@ function KeyPress(input, key) : Base() constructor {
 	_input = input;
 	
 	function start() {
-		show_debug_message("Wait for key up: " + string(_key));
 		_input.addKeyUpListener(_key, function() {
 			finish(index);
 		});
@@ -230,17 +229,14 @@ function copyStruct(struct) {
 	*/
 function Every(input, callback, data) : Base() constructor {
 	name = "Every";
-	type = "delay";
+	type = "function";
 	
 	_input = input;
 	_callback = callback
 	_data = data;
 	
-	function start() {
-		show_debug_message("STARTING MOVE");
-		
+	function start() {		
 		_input.addFunction(_callback, function() {
-			show_debug_message("DONE");
 			finish(index)
 		}, copyStruct(_data));
 	}
@@ -255,9 +251,6 @@ function Restart(timeline) : Base() constructor {
 	function start() {
 		_timeline.reset();
 		_timeline.process = true;
-		
-		show_debug_message("_____________________________________________");
-		show_debug_message("RESTART");
 		
 		_timeline.start();
 	}
@@ -348,9 +341,7 @@ function Timeline() constructor {
 	  * @description             Starts/continues the timeline
 	  * @return {Struct.Timeline}
 		*/
-	start = function() {
-		show_debug_message("START CALLED IN TIMELINE");
-		
+	start = function() {		
 		if (typeof(_startedAt) == "undefined") {
 			_startedAt = current_time;
 		}
@@ -386,8 +377,6 @@ function Timeline() constructor {
 				_position++;
 			}
 		}
-		
-		show_debug_message("Running events: " + string(_runningEvents));
 		
 		for (var i = 0; i < array_length(_batch); i++) {
 			// show_debug_message("Starting timeline item " + string(batch[i])  + " (" + string(_timeline[batch[i]].name) + ")");
@@ -544,10 +533,6 @@ function Timeline() constructor {
 					
 					done();	
 				}
-			}
-			
-			if (array_length(_input._functions) > 1) {
-				game_end();
 			}
 		}, {
 			instanceId: instanceId,
