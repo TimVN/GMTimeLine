@@ -55,12 +55,17 @@ function Instantiate(x, y, amount, interval, obj, mode, properties) : Base() con
 		}
 	}
 	
-	function start() {
+	/** @function start
+	  * @param {Struct.Timeline} timeline
+		*/
+	function start(timeline) {
 		_position++;
 		
 		var instance = instance_create_layer(_x, _y, "Instances", _obj);
 		
 		array_push(_batch, instance);
+		
+		_timeline = timeline;
 		
 		// Pass the onDestroy function. Use it to destroy instances
 		// Do not use instance_destroy. Simply call destroy(id)
@@ -89,8 +94,8 @@ function Instantiate(x, y, amount, interval, obj, mode, properties) : Base() con
 		}
 		
 		// We're not done spawning, so we set another timeout that will repeat this function
-		setTimeout(function() {
-			start();
+		timeline._timeouts.set(function() {
+			start(_timeline);
 		}, _interval * game_get_speed(gamespeed_fps));
 	}
 	
@@ -121,8 +126,8 @@ function Delay(seconds, timeline, callback) : Base() constructor {
 	_timeline = timeline;
 	_callback = callback;
 	
-	function start() {
-		setTimeout(function() {
+	function start(timeline) {
+		timeline._timeouts.set(function() {
 			finish(index);
 		}, _delay, _timeline, _callback);
 	}
@@ -139,16 +144,15 @@ function Limit(seconds) : Base() constructor {
 	_delay = seconds * game_get_speed(gamespeed_fps);
 	_runningEvents = 0;
 	
-	function start(item, batch) {
-		_item = item;
+	function start(timeline, batch) {
 		_batch = batch;
-		_runningEvents = item._runningEvents;
+		_runningEvents = timeline._runningEvents;
 		
 		// We instantly remove this from the timeline, the timeout will still run
 		// If events finish before the timeout, we don't want to be waiting for this timeout
 		finish(index);
 		
-		setTimeout(function() {
+		timeline._timeouts.set(function() {
 			for (var i = 0; i < array_length(_batch); i++) {
 				// We loop through the batch passed to this event and finish them
 				// If they're already finished, they will be ignored
@@ -291,19 +295,20 @@ function Timeline() constructor {
 	_onFinishCallback = undefined;
 	
 	_input = new Input();
+	_timeouts = new Timeouts();
 	_process = true;
 	
-	function step() {
-		setTimeout(function() {
-			// This recursive function will run every step and is used to process input and custom functions
+	step = function() {
+		if (_process) {
 			_input.step();
-			if (_process) {
-				step();
-			}
-		}, 1);
+			_timeouts.process();
+		}
 	}
-
-	step();
+	
+	_processor = instance_create_layer(0, 0, "Instances", OProcessor);
+	_processor.process = step;
+	_processor.alarm[0] = 1;
+	_processor.persistent = persistent;
 	
 	onEventFinished = function(index) {
 		var _inBatch = false;
@@ -602,6 +607,12 @@ function Sequence(timelines) constructor {
 			_timelines[_position].start();
 			
 			_position++;
+		}
+	}
+	
+	reset = function() {
+		for (var i = array_length(_timelines) - 1; i >= 0; i--) {
+			_timeline[i].reset();
 		}
 	}
 	
