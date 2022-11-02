@@ -305,13 +305,13 @@ function Timeline() constructor {
 			_input.step();
 			_timeouts.process();
 		}
+		
+		call_later(1, time_source_units_frames, function() {
+			step();
+		});
 	}
 	
-	// This instance will keep calling the step function of this timeline every step
-	_processor = instance_create_layer(0, 0, "Instances", OTimelineProcessor);
-	_processor.process = step;
-	_processor.alarm[0] = 1;
-	_processor.persistent = persistent;
+	step();
 	
 	onEventFinished = function(index) {
 		var _inBatch = false;
