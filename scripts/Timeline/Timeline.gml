@@ -126,6 +126,10 @@ function Delay(seconds, timeline, callback) : Base() constructor {
 			finish(index);
 		}, _delay, _timeline, _callback);
 	}
+	
+	function release() {
+		
+	}
 }
 
 function Limit(seconds) : Base() constructor {
@@ -166,6 +170,7 @@ function KeyPress(input, key) : Base() constructor {
 	_input = input;
 	
 	function start() {
+		show_debug_message("Wait for key up: " + string(_key));
 		_input.addKeyUpListener(_key, function() {
 			finish(index);
 		});
@@ -225,14 +230,17 @@ function copyStruct(struct) {
 	*/
 function Every(input, callback, data) : Base() constructor {
 	name = "Every";
-	type = "function";
+	type = "delay";
 	
 	_input = input;
 	_callback = callback
 	_data = data;
 	
 	function start() {
+		show_debug_message("STARTING MOVE");
+		
 		_input.addFunction(_callback, function() {
+			show_debug_message("DONE");
 			finish(index)
 		}, copyStruct(_data));
 	}
@@ -248,7 +256,10 @@ function Restart(timeline) : Base() constructor {
 		_timeline.reset();
 		_timeline.process = true;
 		
-		finish(index);
+		show_debug_message("_____________________________________________");
+		show_debug_message("RESTART");
+		
+		_timeline.start();
 	}
 }
 
@@ -338,6 +349,8 @@ function Timeline() constructor {
 	  * @return {Struct.Timeline}
 		*/
 	start = function() {
+		show_debug_message("START CALLED IN TIMELINE");
+		
 		if (typeof(_startedAt) == "undefined") {
 			_startedAt = current_time;
 		}
@@ -359,6 +372,8 @@ function Timeline() constructor {
 				onEventFinished(index);
 			};
 			
+			show_debug_message(string(i) + ": " + _timeline[i].type);
+			
 			// If the current event is of type 'await' or 'delay', we break out of the loop
 			if (_timeline[i].type == "delay") {
 				// We also want to skip over this event in the next iteration
@@ -372,6 +387,8 @@ function Timeline() constructor {
 			}
 		}
 		
+		show_debug_message("Running events: " + string(_runningEvents));
+		
 		for (var i = 0; i < array_length(_batch); i++) {
 			// show_debug_message("Starting timeline item " + string(batch[i])  + " (" + string(_timeline[batch[i]].name) + ")");
 			// We pass a reference to the timeline and the current batch of events
@@ -379,6 +396,24 @@ function Timeline() constructor {
 		}
 		
 		return self;
+	}
+	
+	/** @function reset()
+	  * @description Resets the timeline
+		*/
+	reset = function() {
+		_batch = [];
+		_startedAt = undefined;
+		_position = 0;
+		_runningEvents = 0;
+		_process = false;
+		
+		// Other events might have to clear some data
+		for (var i = 0; i < array_length(_timeline); i++) {
+			if (variable_struct_exists(_timeline[i], "reset")) {
+				_timeline[i].reset();
+			}
+		}
 	}
 	
 	/** @function									instantiate(x, y, amount, interval, obj, mode, properties)
@@ -479,6 +514,52 @@ function Timeline() constructor {
 		return self;
 	}
 	
+	move = function(instanceId, xTo, yTo, spd, includeTimescale) {		
+		array_push(_timeline, new Every(_input, function(done, data) {
+			// show_debug_message(array_length(_input._functions));
+			
+			with (data.instanceId) {
+				var spd = data.scale ? data.spd * global.timeScale : data.spd;
+
+		    // Calculate direction towards player
+		    var toX = data.xTo - x;
+		    var toY = data.yTo - y;
+				
+				// show_debug_message(string(data.xTo) + ":" + string(data.yTo));
+
+		    // Normalize
+		    var toPlayerLength = sqrt(toX * toX + toY * toY);
+		    toX = toX / toPlayerLength;
+		    toY = toY / toPlayerLength;
+
+		    // Move towards the player
+		    x += min(point_distance(x, y, data.xTo, data.yTo), toX * spd);
+		    y += min(point_distance(x, y, data.xTo, data.yTo), toY * spd);
+					
+				// move_towards_point(data.xTo, data.yTo, min(point_distance(x, y, data.xTo, data.yTo), spd));
+			
+				if (point_distance(x, y, data.xTo, data.yTo) == 0) {
+					x = data.xTo;
+					y = data.yTo;
+					
+					done();	
+				}
+			}
+			
+			if (array_length(_input._functions) > 1) {
+				game_end();
+			}
+		}, {
+			instanceId: instanceId,
+			xTo: xTo,
+			yTo: yTo,
+			spd: spd,
+			scale: includeTimescale
+		}));
+		
+		return self;
+	}
+	
 	store = function() {
 		
 	}
@@ -497,22 +578,6 @@ function Timeline() constructor {
 		*/
 	onFinish = function(callback) {
 		_onFinishCallback = callback;
-	}
-	
-	/** @function reset()
-	  * @description Resets the timeline
-		*/
-	reset = function() {
-		_position = 0;
-		_runningEvents = 0;
-		_process = false;
-		
-		// Other events might have to clear some data
-		for (var i = 0; i < array_length(_timeline); i++) {
-			if (variable_struct_exists(_timeline[i], "reset")) {
-				_timeline[i].reset();
-			}
-		}
 	}
 }
 
@@ -563,22 +628,24 @@ function Sequence(timelines) constructor {
 }
 
 function Input() constructor {
-	static _keyPressedListeners = [];
-	static _keyReleasedListeners = [];
-	static _functions = [];
+	_keyPressedListeners = [];
+	_keyReleasedListeners = [];
+	_functions = [];
 	
-	static step = function() {
+	step = function() {
 		var _keyPressedBatch = [];
 		var _keyReleasedBatch = [];
 		
+		// The time comparisons are done to prevent key presses from "leaking" into other events
+		// so it wont fire twice if you were to chain two of the same keypress events in a row
 		for (var i = 0; i < array_length(_keyPressedListeners); i++) {
-			if (keyboard_check_pressed(_keyPressedListeners[i].key)) {
+			if (keyboard_check_pressed(_keyPressedListeners[i].key) && current_time > _keyPressedListeners[i].time) {
 				array_push(_keyPressedBatch, i);
 			}
 		}
 		
 		for (var i = 0; i < array_length(_keyReleasedListeners); i++) {
-			if (keyboard_check_released(_keyReleasedListeners[i].key)) {
+			if (keyboard_check_released(_keyReleasedListeners[i].key) && current_time > _keyReleasedListeners[i].time) {
 				array_push(_keyReleasedBatch, i);
 			}
 		}
@@ -610,16 +677,16 @@ function Input() constructor {
 		}
 	}
 	
-	static addFunction = function(func, done, data) {
+	addFunction = function(func, done, data) {
 		data._startTime = current_time;
 		array_push(_functions, { func: func, done: done, data: data });
 	}
 	
-	static addKeyUpListener = function(key, callback) {
-		array_push(_keyPressedListeners, { key: key, callback: callback });
+	addKeyUpListener = function(key, callback) {
+		array_push(_keyPressedListeners, { key: key, callback: callback, time: current_time });
 	}
 	
-	static addKeyReleaseListener = function(key, callback) {
-		array_push(_keyReleasedListeners, { key: key, callback: callback });
+	addKeyReleaseListener = function(key, callback) {
+		array_push(_keyReleasedListeners, { key: key, callback: callback, time: current_time });
 	}
 }

@@ -1,9 +1,9 @@
 draw_set_font(defaultFont);
 draw_set_color(c_white);
 
-var offset = 10;
+draw_text(10, 10, "Timescale: " + string(global.timeScale));
 
-draw_text(10, offset, "Timescale: " + string(global.timeScale));
+draw_text(10, 40, "1. Waves of monsters\n2.Dialogue\n3.Movement");
 
 if (timer > 0) {
 	var counter = string(timer / game_get_speed(gamespeed_fps));

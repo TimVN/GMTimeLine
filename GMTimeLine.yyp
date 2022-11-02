@@ -4,6 +4,10 @@
   "name": "GMTimeLine",
   "resources": [
     {"id":{"name":"OMonster","path":"objects/OMonster/OMonster.yy",},"order":1,},
+    {"id":{"name":"OMovementExample","path":"objects/OMovementExample/OMovementExample.yy",},"order":4,},
+    {"id":{"name":"RMovement","path":"rooms/RMovement/RMovement.yy",},"order":2,},
+    {"id":{"name":"ODialogExample","path":"objects/ODialogExample/ODialogExample.yy",},"order":3,},
+    {"id":{"name":"RDialog","path":"rooms/RDialog/RDialog.yy",},"order":1,},
     {"id":{"name":"TimeOuts","path":"scripts/TimeOuts/TimeOuts.yy",},"order":1,},
     {"id":{"name":"OLog","path":"objects/OLog/OLog.yy",},"order":2,},
     {"id":{"name":"OTimelineController","path":"objects/OTimelineController/OTimelineController.yy",},"order":0,},
@@ -28,6 +32,8 @@
   },
   "RoomOrderNodes": [
     {"roomId":{"name":"RMain","path":"rooms/RMain/RMain.yy",},},
+    {"roomId":{"name":"RDialog","path":"rooms/RDialog/RDialog.yy",},},
+    {"roomId":{"name":"RMovement","path":"rooms/RMovement/RMovement.yy",},},
   ],
   "Folders": [
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Animation Curves","folderPath":"folders/Animation Curves.yy","order":12,},

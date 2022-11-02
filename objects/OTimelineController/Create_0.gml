@@ -35,7 +35,7 @@ timeline = new Timeline()
 	.await()
 	// Run custom logic once
 	.once(function(done, data) {
-		show_debug_message(data.foo);
+		show_debug_message(data);
 		
 		done();
 	}, {
@@ -55,8 +55,6 @@ timeline = new Timeline()
 		
 		// Stop after 5 seconds (given that timeScale = 1)
 		if (seconds == 5) {
-			global.timeScale++;
-			
 			done();
 		}
 	}, {
@@ -71,7 +69,7 @@ timeline.onFinish(function() {
 });
 
 setTimeout(function() {
-	timeline.start();
+	// timeline.start();
 }, 1);
 
 sequence = new Sequence([
