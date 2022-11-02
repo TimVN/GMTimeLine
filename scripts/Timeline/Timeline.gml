@@ -33,16 +33,18 @@ function Instantiate(x, y, amount, interval, obj, mode, properties) : Base() con
 	function onDestroy(instanceId) {
 		instance_destroy(instanceId);
 		
-		var isFound = false;
+		var inBatch = false;
 		
+		// The event could be "released", but the instances will still call this function
+		// If we've restarted the timeline for example, we don't want old instances disrupting it
 		for (var i = array_length(_batch) - 1; i >= 0; i--) {
 			if (_batch[i] == instanceId) {
-				isFound = true;
+				inBatch = true;
 				array_delete(_batch, i, 1);
 			}
 		}
 		
-		if (!isFound) {
+		if (!inBatch) {
 			return;
 		}
 		
@@ -305,7 +307,8 @@ function Timeline() constructor {
 		}
 	}
 	
-	_processor = instance_create_layer(0, 0, "Instances", OProcessor);
+	// This instance will keep calling the step function of this timeline every step
+	_processor = instance_create_layer(0, 0, "Instances", OTimelineProcessor);
 	_processor.process = step;
 	_processor.alarm[0] = 1;
 	_processor.persistent = persistent;

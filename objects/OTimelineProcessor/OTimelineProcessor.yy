@@ -1,7 +1,7 @@
 {
   "resourceType": "GMObject",
   "resourceVersion": "1.0",
-  "name": "OProcessor",
+  "name": "OTimelineProcessor",
   "spriteId": null,
   "solid": false,
   "visible": true,

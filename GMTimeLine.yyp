@@ -5,7 +5,7 @@
   "resources": [
     {"id":{"name":"OMonster","path":"objects/OMonster/OMonster.yy",},"order":1,},
     {"id":{"name":"OMovementExample","path":"objects/OMovementExample/OMovementExample.yy",},"order":4,},
-    {"id":{"name":"OProcessor","path":"objects/OProcessor/OProcessor.yy",},"order":6,},
+    {"id":{"name":"OTimelineProcessor","path":"objects/OTimelineProcessor/OTimelineProcessor.yy",},"order":6,},
     {"id":{"name":"RMovement","path":"rooms/RMovement/RMovement.yy",},"order":2,},
     {"id":{"name":"OWaveExample","path":"objects/OWaveExample/OWaveExample.yy",},"order":5,},
     {"id":{"name":"ODialogExample","path":"objects/ODialogExample/ODialogExample.yy",},"order":3,},
