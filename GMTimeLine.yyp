@@ -7,6 +7,7 @@
     {"id":{"name":"OMovementExample","path":"objects/OMovementExample/OMovementExample.yy",},"order":4,},
     {"id":{"name":"RMovement","path":"rooms/RMovement/RMovement.yy",},"order":2,},
     {"id":{"name":"OWaveExample","path":"objects/OWaveExample/OWaveExample.yy",},"order":5,},
+    {"id":{"name":"OTimelineEventHook","path":"objects/OTimelineEventHook/OTimelineEventHook.yy",},"order":6,},
     {"id":{"name":"ODialogExample","path":"objects/ODialogExample/ODialogExample.yy",},"order":3,},
     {"id":{"name":"RDialog","path":"rooms/RDialog/RDialog.yy",},"order":1,},
     {"id":{"name":"TimeOuts","path":"scripts/TimeOuts/TimeOuts.yy",},"order":1,},

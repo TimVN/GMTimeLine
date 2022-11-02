@@ -17,9 +17,9 @@ var dialog = new Timeline()
 	})
 	.keyPress(vk_space)
 	.every(function(done) {
-		hp += 1;
+		hp += hp * 0.05;
 		
-		if (hp == 100) {
+		if (hp >= 100) {
 			hp = 100;
 			done();
 		}

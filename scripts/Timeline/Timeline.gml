@@ -305,6 +305,10 @@ function Timeline() constructor {
 	_timeouts = new Timeouts();
 	_process = true;
 	
+	var eventHook = instance_create_layer(0, 0, "Instances", OTimelineEventHook);
+	
+	eventHook.timeline = self;
+	
 	step = function() {
 		if (_process) {
 			_input.step();
@@ -406,6 +410,12 @@ function Timeline() constructor {
 		_position = 0;
 		_runningEvents = 0;
 		_process = false;
+		
+		for (var i = array_length(_timeouts._timeouts) - 1; i >= 0; i--) {
+			array_delete(_timeouts._timeouts, i, 1);
+		}
+		
+		_input.reset();
 		
 		// Other events might have to clear some data
 		for (var i = 0; i < array_length(_timeline); i++) {
@@ -648,5 +658,19 @@ function Input() constructor {
 	
 	addKeyReleaseListener = function(key, callback) {
 		array_push(_keyReleasedListeners, { key: key, callback: callback, time: current_time });
+	}
+	
+	reset = function() {
+		for (var i = 0; i < array_length(_keyPressedListeners); i++) {
+			array_delete(_keyPressedListeners, i, 1);
+		}
+		
+		for (var i = 0; i < array_length(_keyReleasedListeners); i++) {
+			array_delete(_keyReleasedListeners, i, 1);
+		}
+		
+		for (var i = array_length(_functions) - 1; i >= 0; i--) {
+			array_delete(_functions, i, 1);
+		}
 	}
 }
