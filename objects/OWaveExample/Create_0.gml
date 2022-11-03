@@ -1,5 +1,3 @@
-countdownFont = font_add("Viga-Regular.ttf", 60, false, false, 32, 128);
-
 counter = 0;
 
 updateCounter = function(ms) {
@@ -10,7 +8,7 @@ updateCounter = function(ms) {
 // They will be executed in order
 var waves = new Sequence([
 	new Timeline()
-		// Delay the timeline for 5 seconds. delay calls back with the ms left
+		// Delay the timeline for 5 seconds. delay calls back with the frames left
 		// which we can use to update our counter
 		.delay(5, updateCounter)
 		.instantiate(200, 200, 10, 1, OMonster, WaitingMode.Destroy, {}, function(instances) {

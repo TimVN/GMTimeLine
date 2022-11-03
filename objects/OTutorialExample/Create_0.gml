@@ -18,12 +18,13 @@ var tutorial = new Timeline()
 	// Lets change the displayed text
 	.once(function(done) {
 		showCheckPoint = false;
-		dialog = "Wow! You really know how to walk!";
 		
 		done();
 	})
 	// Wait for 2 seconds
-	.delay(2)
+	.delay(2, function(ms) {
+		dialog = "Wow! You really know how to walk! Continuing in " + string(ms / game_get_speed(gamespeed_fps));
+	})
 	// Spawn 3 targets for the player to shoot at
 	// WaitingMode.Destroy means we want the events to be considered finished
 	// When the spawned instances are destroyed

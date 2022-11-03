@@ -20,7 +20,9 @@
     {"id":{"name":"OPlayer","path":"objects/OPlayer/OPlayer.yy",},"order":1,},
     {"id":{"name":"OLog","path":"objects/OLog/OLog.yy",},"order":2,},
     {"id":{"name":"OTimelineController","path":"objects/OTimelineController/OTimelineController.yy",},"order":0,},
+    {"id":{"name":"FDefault","path":"fonts/FDefault/FDefault.yy",},"order":0,},
     {"id":{"name":"Timeline","path":"scripts/Timeline/Timeline.yy",},"order":0,},
+    {"id":{"name":"FCounter","path":"fonts/FCounter/FCounter.yy",},"order":1,},
     {"id":{"name":"RMain","path":"rooms/RMain/RMain.yy",},"order":0,},
   ],
   "Options": [
@@ -68,9 +70,7 @@
   "TextureGroups": [
     {"resourceType":"GMTextureGroup","resourceVersion":"1.3","name":"Default","isScaled":true,"compressFormat":"bz2","loadType":"default","directory":"","autocrop":true,"border":2,"mipsToGenerate":0,"groupParent":null,"targets":-1,},
   ],
-  "IncludedFiles": [
-    {"resourceType":"GMIncludedFile","resourceVersion":"1.0","name":"Viga-Regular.ttf","CopyToMask":-1,"filePath":"datafiles",},
-  ],
+  "IncludedFiles": [],
   "MetaData": {
     "IDEVersion": "2022.9.1.51",
   },

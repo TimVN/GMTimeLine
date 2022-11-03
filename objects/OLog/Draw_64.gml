@@ -1,4 +1,4 @@
-draw_set_font(defaultFont);
+draw_set_font(FDefault);
 draw_set_color(c_blue);
 
 var offset = 0;
