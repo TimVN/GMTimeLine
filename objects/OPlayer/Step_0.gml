@@ -11,5 +11,5 @@ if (mouse_check_button_pressed(mb_left)) {
 	
 	bullet.direction = direction;
 	bullet.image_angle = direction;
-	bullet.speed = 25 * global.timeScale;
+	bullet.initialSpeed = 25;
 }

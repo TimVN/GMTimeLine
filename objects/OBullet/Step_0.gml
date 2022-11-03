@@ -1,0 +1,1 @@
+speed = initialSpeed * global.timeScale;
