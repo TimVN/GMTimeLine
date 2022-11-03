@@ -4,6 +4,8 @@ A pure code approach to timelines in Game Maker
 
 ## Examples
 
+[Live examples here!](https://timvn.github.io/GMTimeLine)
+
 GMTimeline allows you to create timelines by simply chaining events, like so:
 
 ```javascript
@@ -109,6 +111,10 @@ sequence.onFinish(function (data) {
 
 sequence.start();
 ```
+
+# Installing
+
+Simply download `GMTimeLine.yyp` and drag it over to your project. A Marketplace link will come soon!
 
 # Documentation
 
