@@ -246,7 +246,7 @@ function Every(input, callback, data) : Base() constructor {
 	_callback = callback
 	_data = data;
 	
-	function start() {		
+	function start() {
 		_input.addFunction(_callback, function() {
 			finish(index)
 		}, copyStruct(_data));
@@ -261,9 +261,7 @@ function Restart(timeline) : Base() constructor {
 	
 	function start() {
 		_timeline.reset();
-		_timeline.process = true;
-		
-		_timeline.start();
+		call_later(1, time_source_units_frames, _timeline.start);
 	}
 }
 
@@ -405,17 +403,12 @@ function Timeline() constructor {
 	  * @description Resets the timeline
 		*/
 	reset = function() {
+		show_debug_message("Resetting timeline");
 		_batch = [];
 		_startedAt = undefined;
 		_position = 0;
 		_runningEvents = 0;
 		_process = false;
-		
-		for (var i = array_length(_timeouts._timeouts) - 1; i >= 0; i--) {
-			array_delete(_timeouts._timeouts, i, 1);
-		}
-		
-		_input.reset();
 		
 		// Other events might have to clear some data
 		for (var i = 0; i < array_length(_timeline); i++) {
@@ -423,6 +416,9 @@ function Timeline() constructor {
 				_timeline[i].reset();
 			}
 		}
+		
+		_timeouts.reset();
+		_input.reset();
 	}
 	
 	/** @function									instantiate(x, y, amount, interval, obj, mode, properties)
@@ -661,16 +657,21 @@ function Input() constructor {
 	}
 	
 	reset = function() {
-		for (var i = 0; i < array_length(_keyPressedListeners); i++) {
-			array_delete(_keyPressedListeners, i, 1);
-		}
+		show_debug_message("Resetting input");
+		_keyPressedListeners = [];
+		_keyReleasedListeners = [];
+		_functions = [];
 		
-		for (var i = 0; i < array_length(_keyReleasedListeners); i++) {
-			array_delete(_keyReleasedListeners, i, 1);
-		}
+		//for (var i = 0; i < array_length(_keyPressedListeners); i++) {
+		//	array_delete(_keyPressedListeners, i, 1);
+		//}
 		
-		for (var i = array_length(_functions) - 1; i >= 0; i--) {
-			array_delete(_functions, i, 1);
-		}
+		//for (var i = 0; i < array_length(_keyReleasedListeners); i++) {
+		//	array_delete(_keyReleasedListeners, i, 1);
+		//}
+		
+		//for (var i = array_length(_functions) - 1; i >= 0; i--) {
+		//	array_delete(_functions, i, 1);
+		//}
 	}
 }

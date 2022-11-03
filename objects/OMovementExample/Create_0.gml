@@ -6,18 +6,10 @@ y = 200;
 move = function(done, data) {
 	var spd = data.speed * global.timeScale;
 
-	var xTo = data.x - x;
-	var yTo = data.y - y;
-	
-	var angle = arctan2(yTo, xTo);
-
-	xTo = cos(angle);
-	yTo = sin(angle);
-	
-	x += min(point_distance(x, y, data.x, y), xTo * spd);
-	y += min(point_distance(x, y, x, data.y), yTo * spd);
+	move_towards_point(data.x, data.y, min(point_distance(x, y, data.x, data.y), spd));
 			
 	if (point_distance(x, y, data.x, data.y) == 0) {
+		speed = 0;
 		x = data.x;
 		y = data.y;
 					
@@ -26,11 +18,14 @@ move = function(done, data) {
 };
 
 var timeline = new Timeline()
+	// We can pass a function and data to every, it will be called every step
+	// until the first argument (done callback) is called
 	.every(move, {
 		x: 200,
 		y: 200,
 		speed: 10,
 	})
+	// Wait for the previous event(s) to finish before continuing
 	.await()
 	.every(move, {
 		x: 200,

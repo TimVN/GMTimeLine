@@ -45,4 +45,8 @@ function Timeouts() constructor {
 			}
 		}
 	}
+	
+	function reset() {
+		_timeouts = [];
+	}
 }
