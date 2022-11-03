@@ -285,10 +285,10 @@ The function will destroy the instance.
 
 Allows for a function to be run every step
 
-| Param | Type                    | Description                                                                                                               |
-| ----- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| func  | <code>function</code>   | Function to run every step - will be passed a function to indicate that the function is done and the timeline can proceed |
-| data  | <code>Struct.Any</code> | Data to be passed to the callback function                                                                                |
+| Param | Type                              | Description                                                                                                                                              |
+| ----- |-----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| func  | <code>function(done, data)</code> | Function to run every step - will be passed a function as its first argument. Call it to indicate that the function is done and the timeline can proceed |
+| data  | <code>Struct.Any</code>           | Data to be passed to the callback function                                                                                                               |
 
 <a name="once"></a>
 
@@ -297,10 +297,10 @@ Allows for a function to be run every step
 Allows for a custom function to be called in between events,
 the function gets **called back a with callback function that can be called to proceed with the timeline**
 
-| Param    | Type                    | Description                                |
-| -------- | ----------------------- | ------------------------------------------ |
-| callback | <code>function</code>   | The function to be called back             |
-| data     | <code>Struct.Any</code> | Data to be passed to the callback function |
+| Param    | Type                              | Description                                |
+| -------- |-----------------------------------|--------------------------------------------|
+| callback | <code>function(done, data)</code> | The function to be called back. will be passed a function as its first argument. Call it to indicate that the function is done and the timeline can proceed  |
+| data     | <code>Struct.Any</code>           | Data to be passed to the callback function |
 
 <a name="onFinish"></a>
 
