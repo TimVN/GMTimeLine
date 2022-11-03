@@ -7,11 +7,19 @@ if (keyboard_check_pressed(ord("P"))) {
 }
 
 if (keyboard_check_pressed(vk_up)) {
-	global.timeScale++;
+	if (global.timeScale < 1) {
+		global.timeScale += 0.1;
+	} else {
+		global.timeScale++;
+	}
 }
 
 if (keyboard_check_pressed(vk_down)) {
-	global.timeScale = max(global.timeScale - 1, 0);
+	if (global.timeScale > 1) {
+		global.timeScale--;
+	} else {
+		global.timeScale = max(global.timeScale - 0.1, 0);
+	}
 }
 
 if (keyboard_check_pressed(ord("1"))) {
